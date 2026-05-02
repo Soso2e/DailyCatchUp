@@ -1078,3 +1078,200 @@ google.genai.errors.ClientError: 400 INVALID_ARGUMENT. {'error': {'code': 400, '
 2026-05-03 05:20:03,776 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
 2026-05-03 05:20:05,191 [INFO] notebooklm.poller: Poll #13 – audio=False video=False summary=False
 2026-05-03 05:20:05,191 [DEBUG] notebooklm.poller: Waiting 60s (149s remaining)
+2026-05-03 05:26:54,580 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 05:26:54,580 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 05:26:55,104 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 05:26:55,883 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:26:55,883 [INFO] __main__: === Step: collect news (2026-05-03) ===
+2026-05-03 05:26:56,419 [DEBUG] collector.rss_collector: RSS [google_news_ja_ai]: 100 entries
+2026-05-03 05:26:56,960 [DEBUG] collector.rss_collector: RSS [google_news_ja_game]: 70 entries
+2026-05-03 05:26:57,945 [DEBUG] collector.rss_collector: RSS [google_news_en_ai]: 100 entries
+2026-05-03 05:26:58,569 [DEBUG] collector.rss_collector: RSS [google_news_en_game]: 100 entries
+2026-05-03 05:26:59,110 [DEBUG] collector.rss_collector: RSS [google_news_ja_ai_global]: 100 entries
+2026-05-03 05:26:59,260 [DEBUG] collector.rss_collector: RSS [4gamer]: 100 entries
+2026-05-03 05:26:59,506 [DEBUG] collector.rss_collector: RSS [famitsu]: 0 entries
+2026-05-03 05:26:59,648 [DEBUG] collector.rss_collector: RSS [aimedia]: 0 entries
+2026-05-03 05:26:59,744 [DEBUG] collector.rss_collector: RSS [techcrunch_ai]: 20 entries
+2026-05-03 05:26:59,973 [DEBUG] collector.rss_collector: RSS [venturebeat_ai]: 7 entries
+2026-05-03 05:26:59,974 [INFO] collector.rss_collector: RSS collected 75 articles total
+2026-05-03 05:27:00,415 [DEBUG] collector.newsapi_collector: NewsAPI [("AI" OR "artificial intelligence" OR "machine learning" OR "LLM" OR "generative AI") AND (game OR gaming OR developer OR release OR model)]: fetched 0 items
+2026-05-03 05:27:00,833 [DEBUG] collector.newsapi_collector: NewsAPI ["OpenAI" OR "Anthropic" OR "Google AI" OR "Gemini" OR "Claude"]: fetched 0 items
+2026-05-03 05:27:01,320 [DEBUG] collector.newsapi_collector: NewsAPI ["生成AI" OR "人工知能" OR "機械学習" OR "LLM"]: fetched 0 items
+2026-05-03 05:27:01,320 [INFO] collector.newsapi_collector: NewsAPI collected 0 articles total
+2026-05-03 05:27:01,469 [INFO] collector.filter: Filtered to 10 articles (from 75 candidates, min=2)
+2026-05-03 05:27:01,469 [INFO] __main__: Selected 10 articles for today
+2026-05-03 05:27:01,469 [INFO] __main__:   1. [JA] 「ChatGPT Images 2.0」 vs. 「Gemini Nano Banana」--画像生成AIの実力を比較 - ZDNET Japan
+2026-05-03 05:27:01,469 [INFO] __main__:   2. [JA] 「Magical Blush」制作発表。呪文コンボシステムとメトロイドヴァニア風の探索を組み合わせた2Dアクションアドベンチャー
+2026-05-03 05:27:01,469 [INFO] __main__:   3. [JA] Steamで“非常に好評”の高難度アクションADV「Constance」，コンシューマ版を発売。アーティストが自らの精神世界からの脱出を目指す
+2026-05-03 05:27:01,469 [INFO] __main__:   4. [EN] Anthropic's most powerful AI model just exposed a crisis in corporate governance
+2026-05-03 05:27:01,470 [INFO] __main__:   5. [JA] 最高裁長官、保釈に「不断の検討が必要」 生成AIは「猛獣」と表現 - 朝日新聞
+2026-05-03 05:27:01,470 [INFO] __main__:   6. [EN] Richard Dawkins and The Claude Delusion - Marcus on AI | Substack
+2026-05-03 05:27:01,470 [INFO] __main__:   7. [EN] Anthropic in Talks to Buy AI Chips From U.K. Startup - The Information
+2026-05-03 05:27:01,470 [INFO] __main__:   8. [EN] AI: Artificial Intelligence Review Part 8 - mindmatters.ai
+2026-05-03 05:27:01,470 [INFO] __main__:   9. [JA] 「Die in the Dungeon」，アーリーアクセスを終了して製品版に移行。ダイスでデッキを組むユニークなターン制ローグライト
+2026-05-03 05:27:01,470 [INFO] __main__:   10. [JA] ［プレイレポ］「Apex Legends」新レジェンド「アクセル」は，機動力特化のスカーミッシャークラス。戦場をレース場に変える能力をチェックだ
+2026-05-03 05:27:03,068 [INFO] notion.article_store: Saved 10 articles to Notion page 354d7670-ba17-81f3-963f-c7894ee46b7d
+2026-05-03 05:27:03,644 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:27:03,644 [WARNING] notebooklm.client: notebooklm-py unavailable (cannot import name 'NotebookLM' from 'notebooklm' (C:\#Project\Server\DailyCatchUp\notebooklm\__init__.py)) – switching to Playwright fallback
+2026-05-03 05:27:04,890 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:27:07,607 [INFO] notebooklm.playwright_fallback: Playwright created notebook id=7ddf6144-f18a-48fb-8327-3148d4f57773?addSource=true
+2026-05-03 05:27:08,723 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:27:08,723 [INFO] __main__: Notebook created: id=7ddf6144-f18a-48fb-8327-3148d4f57773?addSource=true url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773?addSource=true
+2026-05-03 05:27:09,647 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:27:10,897 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773?addSource=true target=https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJWT0FFMDd2VVNiaHlMRDF0SEtkQjdoYnFxUHVKeS1saTV3Q2lEVDZLeFMzcU9JMzNTMnlqX1F3?oc=5
+2026-05-03 05:27:18,100 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2V
+2026-05-03 05:27:18,100 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773 target=https://www.4gamer.net/games/004/G100422/20260502002/
+2026-05-03 05:27:22,201 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/004/G100422/20260502002/
+2026-05-03 05:27:22,201 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773 target=https://www.4gamer.net/games/981/G098149/20260501001/
+2026-05-03 05:27:26,280 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/981/G098149/20260501001/
+2026-05-03 05:27:26,280 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773 target=https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2doLU53TjFUT3pjR29KOFdqbE1fOVlVUW1McENQZlpSVDluVXFtNGc2Q0haM0tTQ0RuMENTNGl4Q3VzeFhzSjBaeC1oUTB5SlhNSUdZY0R4czdBN2RjMFNvTUZWYmFac1I5bDhhREdiU1hxenl6enZxVS10aDBIUjVTOExKMGVMeHFidW41RGUtcTVvZTVITmNyb2hRU09GUEV5Vnd4a3B0bWhSZHM?oc=5
+2026-05-03 05:27:30,358 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlF
+2026-05-03 05:27:30,359 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773 target=https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTNQZ3ZmT3hzRHotdVY3SVBLSW5Zd3UzaVBWWWM0cEt5LXpBd01oSDRyYUN6R1EwejRGRXE4b2xyaVE5M1hpdXh4Z0hpMnc2NFpHS1U?oc=5
+2026-05-03 05:27:34,469 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1F
+2026-05-03 05:27:34,469 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773 target=https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJfWk4tWkV0ZkQ4RmluS1hUdnFqODJaSVFRRG1FVjlvSG0yQ3ctOVhRek5BUXN4d1kxdkdhb0ZsSy1yR3BaUi1ySnRwQno5RFY5d1hsSXM4R1pYSEFZVjlybHFXdXBDTmpXZw?oc=5
+2026-05-03 05:27:38,567 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4
+2026-05-03 05:27:38,567 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773 target=https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVVHTnBjSmUwNG01R0RvZFhhUWNteVZFVUVIUTA1YlBGazV4NVRVNzZlaUZSNjgza2JOUEl5a3p2Y0xGN1FuQVVYemRQRDloOUxab2oyYXFQbVNVbVdoYlcyM0FKSnRrOEVZN2swdGVrS3pETjQ?oc=5
+2026-05-03 05:27:42,685 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG5
+2026-05-03 05:27:42,685 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773 target=https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc5N3pWczNEWWUwSE5ucGVJTV9NSUpmUjZiTU5nWjNhd3NJNkVnMkxGMldlQjZTampaZ1Y5ejhWYXcwMmpFMldXcWVyOUxtRjhmUld3UHA3THAtQXl1bnIwWHdCV1RVdWM?oc=5
+2026-05-03 05:27:46,782 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHR
+2026-05-03 05:27:46,782 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773 target=https://www.4gamer.net/games/758/G075809/20260502006/
+2026-05-03 05:27:50,909 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/758/G075809/20260502006/
+2026-05-03 05:27:50,910 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/7ddf6144-f18a-48fb-8327-3148d4f57773 target=https://www.4gamer.net/games/449/G044914/20260501051/
+2026-05-03 05:27:55,010 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/449/G044914/20260501051/
+2026-05-03 05:27:55,010 [INFO] notebooklm.playwright_fallback: Playwright added 10/10 sources
+2026-05-03 05:27:55,884 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:27:57,131 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:28:28,011 [WARNING] notebooklm.playwright_fallback: Playwright audio trigger failed: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"audio.?overview|音声概要|音声", re.IGNORECASE)).first
+    - locator resolved to <div tabindex="0" role="button" aria-label="音声解説" _ngcontent-ng-c736808743="" cdk-describedby-host="ng-1" jslog="261212;track:generic_click,impression" aria-describedby="cdk-describedby-message-ng-1-11" class="mat-mdc-tooltip-trigger blue create-artifact-button-container mat-label-medium">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="dialog-container" _ngcontent-ng-c4020324210="" jslog="279302;track:impression">…</div> from <div class="cdk-overlay-container">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="dialog-container" _ngcontent-ng-c4020324210="" jslog="279302;track:impression">…</div> from <div class="cdk-overlay-container">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="dialog-container" _ngcontent-ng-c4020324210="" jslog="279302;track:impression">…</div> from <div class="cdk-overlay-container">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 05:28:28,681 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:28:28,681 [INFO] __main__: Polling for generation completion (max 900s)...
+2026-05-03 05:28:29,705 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:28:31,092 [INFO] notebooklm.poller: Poll #1 – audio=False video=False summary=False
+2026-05-03 05:28:31,092 [DEBUG] notebooklm.poller: Waiting 60s (897s remaining)
+2026-05-03 05:29:32,116 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:29:33,499 [INFO] notebooklm.poller: Poll #2 – audio=False video=False summary=False
+2026-05-03 05:29:33,499 [DEBUG] notebooklm.poller: Waiting 60s (835s remaining)
+2026-05-03 05:30:34,540 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:30:35,936 [INFO] notebooklm.poller: Poll #3 – audio=False video=False summary=False
+2026-05-03 05:30:35,936 [DEBUG] notebooklm.poller: Waiting 60s (772s remaining)
+2026-05-03 05:31:37,036 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:31:38,420 [INFO] notebooklm.poller: Poll #4 – audio=False video=False summary=False
+2026-05-03 05:31:38,420 [DEBUG] notebooklm.poller: Waiting 60s (710s remaining)
+2026-05-03 05:44:41,574 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 05:44:41,574 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 05:44:42,081 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 05:44:48,266 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:44:48,266 [INFO] __main__: news_collected already True - loading cached articles
+2026-05-03 05:44:48,706 [INFO] notion.article_store: Loaded 10 articles from Notion page 354d7670-ba17-81f3-963f-c7894ee46b7d
+2026-05-03 05:44:48,716 [ERROR] __main__: Morning pipeline error: cannot import name 'NotebookLMClient' from 'notebooklm' (C:\#Project\Server\DailyCatchUp\notebooklm\__init__.py)
+Traceback (most recent call last):
+  File "C:\#Project\Server\DailyCatchUp\scheduler\runner.py", line 217, in run_morning_pipeline
+    create_result = client.create_notebook(f"AI・ゲームニュース {date_str}")
+                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\client.py", line 48, in create_notebook
+    return self._run(_inner())
+           ~~~~~~~~~^^^^^^^^^^
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\client.py", line 38, in _run
+    return asyncio.run(coro)
+           ~~~~~~~~~~~^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\client.py", line 42, in _inner
+    from notebooklm import NotebookLMClient as _Lib  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: cannot import name 'NotebookLMClient' from 'notebooklm' (C:\#Project\Server\DailyCatchUp\notebooklm\__init__.py)
+
+2026-05-03 05:44:49,256 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:44:49,855 [INFO] __main__: ====== Evening pipeline start (2026-05-03) ======
+2026-05-03 05:44:50,312 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 05:44:51,181 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 05:44:51,639 [INFO] notion.article_store: Loaded 10 articles from Notion page 354d7670-ba17-81f3-963f-c7894ee46b7d
+2026-05-03 05:44:51,640 [ERROR] __main__: No metadata available - cannot proceed with evening pipeline
+2026-05-03 05:48:42,802 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 05:48:42,802 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 05:48:43,330 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 05:48:44,319 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:48:44,320 [INFO] __main__: news_collected already True - loading cached articles
+2026-05-03 05:48:44,807 [INFO] notion.article_store: Loaded 10 articles from Notion page 354d7670-ba17-81f3-963f-c7894ee46b7d
+2026-05-03 05:48:46,241 [INFO] nlm.client: Created notebook id=7d6cc548-e0f4-4224-8b07-58a6c35916aa
+2026-05-03 05:48:47,226 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:48:47,226 [INFO] __main__: Notebook created: id=7d6cc548-e0f4-4224-8b07-58a6c35916aa url=https://notebooklm.google.com/notebook/7d6cc548-e0f4-4224-8b07-58a6c35916aa
+2026-05-03 05:48:55,069 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJWT0FFMDd2VVNiaHlMRDF0SEtkQjdoYnFxUHVKeS1saTV3Q2lEVDZLeFMzcU9JMzNTMnlqX1F3?oc=5]: Failed to add source: https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJWT0FFMDd2VVNiaHlMRDF0SEtkQjdoYnFxUHVKeS1saTV3Q2lEVDZLeFMzcU9JMzNTMnlqX1F3?oc=5
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 05:49:04,700 [DEBUG] nlm.client: Added source: 「Magical Blush」制作発表。呪文コンボシステムとメトロイドヴァニア風の探索を組み合わせた2Dアクションアドベ
+2026-05-03 05:49:12,042 [DEBUG] nlm.client: Added source: Steamで“非常に好評”の高難度アクションADV「Constance」，コンシューマ版を発売。アーティストが自らの精神
+2026-05-03 05:49:19,329 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2doLU53TjFUT3pjR29KOFdqbE1fOVlVUW1McENQZlpSVDluVXFtNGc2Q0haM0tTQ0RuMENTNGl4Q3VzeFhzSjBaeC1oUTB5SlhNSUdZY0R4czdBN2RjMFNvTUZWYmFac1I5bDhhREdiU1hxenl6enZxVS10aDBIUjVTOExKMGVMeHFidW41RGUtcTVvZTVITmNyb2hRU09GUEV5Vnd4a3B0bWhSZHM?oc=5]: Failed to add source: https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2doLU53TjFUT3pjR29KOFdqbE1fOVlVUW1McENQZlpSVDluVXFtNGc2Q0haM0tTQ0RuMENTNGl4Q3VzeFhzSjBaeC1oUTB5SlhNSUdZY0R4czdBN2RjMFNvTUZWYmFac1I5bDhhREdiU1hxenl6enZxVS10aDBIUjVTOExKMGVMeHFidW41RGUtcTVvZTVITmNyb2hRU09GUEV5Vnd4a3B0bWhSZHM?oc=5
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 05:49:28,592 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTNQZ3ZmT3hzRHotdVY3SVBLSW5Zd3UzaVBWWWM0cEt5LXpBd01oSDRyYUN6R1EwejRGRXE4b2xyaVE5M1hpdXh4Z0hpMnc2NFpHS1U?oc=5]: Failed to add source: https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTNQZ3ZmT3hzRHotdVY3SVBLSW5Zd3UzaVBWWWM0cEt5LXpBd01oSDRyYUN6R1EwejRGRXE4b2xyaVE5M1hpdXh4Z0hpMnc2NFpHS1U?oc=5
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 05:49:35,797 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJfWk4tWkV0ZkQ4RmluS1hUdnFqODJaSVFRRG1FVjlvSG0yQ3ctOVhRek5BUXN4d1kxdkdhb0ZsSy1yR3BaUi1ySnRwQno5RFY5d1hsSXM4R1pYSEFZVjlybHFXdXBDTmpXZw?oc=5]: Failed to add source: https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJfWk4tWkV0ZkQ4RmluS1hUdnFqODJaSVFRRG1FVjlvSG0yQ3ctOVhRek5BUXN4d1kxdkdhb0ZsSy1yR3BaUi1ySnRwQno5RFY5d1hsSXM4R1pYSEFZVjlybHFXdXBDTmpXZw?oc=5
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 05:49:43,200 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVVHTnBjSmUwNG01R0RvZFhhUWNteVZFVUVIUTA1YlBGazV4NVRVNzZlaUZSNjgza2JOUEl5a3p2Y0xGN1FuQVVYemRQRDloOUxab2oyYXFQbVNVbVdoYlcyM0FKSnRrOEVZN2swdGVrS3pETjQ?oc=5]: Failed to add source: https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVVHTnBjSmUwNG01R0RvZFhhUWNteVZFVUVIUTA1YlBGazV4NVRVNzZlaUZSNjgza2JOUEl5a3p2Y0xGN1FuQVVYemRQRDloOUxab2oyYXFQbVNVbVdoYlcyM0FKSnRrOEVZN2swdGVrS3pETjQ?oc=5
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 05:49:53,908 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc5N3pWczNEWWUwSE5ucGVJTV9NSUpmUjZiTU5nWjNhd3NJNkVnMkxGMldlQjZTampaZ1Y5ejhWYXcwMmpFMldXcWVyOUxtRjhmUld3UHA3THAtQXl1bnIwWHdCV1RVdWM?oc=5]: Failed to add source: https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc5N3pWczNEWWUwSE5ucGVJTV9NSUpmUjZiTU5nWjNhd3NJNkVnMkxGMldlQjZTampaZ1Y5ejhWYXcwMmpFMldXcWVyOUxtRjhmUld3UHA3THAtQXl1bnIwWHdCV1RVdWM?oc=5
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 05:50:01,719 [DEBUG] nlm.client: Added source: 「Die in the Dungeon」，アーリーアクセスを終了して製品版に移行。ダイスでデッキを組むユニークなターン制
+2026-05-03 05:50:10,602 [DEBUG] nlm.client: Added source: ［プレイレポ］「Apex Legends」新レジェンド「アクセル」は，機動力特化のスカーミッシャークラス。戦場をレース場
+2026-05-03 05:50:10,602 [INFO] nlm.client: Added 4/10 sources to notebook 7d6cc548-e0f4-4224-8b07-58a6c35916aa
+2026-05-03 05:50:11,692 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:50:17,335 [INFO] nlm.client: Audio generation started task_id=92bfb5b9-850e-4f65-9196-b4072841f6e4
+2026-05-03 05:50:20,214 [INFO] nlm.client: Video generation started task_id=6125ed42-bba5-400d-b1d9-dd5eb49f32e6
+2026-05-03 05:50:24,274 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:50:24,274 [INFO] __main__: Waiting for generation completion (max 900s)...
+2026-05-03 05:50:24,945 [INFO] nlm.client: Waiting for audio (task=92bfb5b9-850e-4f65-9196-b4072841f6e4, timeout=900s)...

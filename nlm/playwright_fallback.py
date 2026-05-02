@@ -15,7 +15,7 @@ from typing import List
 import config
 from collector.rss_collector import Article
 from logger import get_logger
-from notebooklm.client import GenerationResult
+from nlm.client import GenerationResult
 
 log = get_logger(__name__)
 
