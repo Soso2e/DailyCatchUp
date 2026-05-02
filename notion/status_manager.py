@@ -3,6 +3,9 @@
 Maintains one record per day tracking pipeline progress (news_collected,
 notebooklm_generated, etc.).  Falls back to SQLite automatically if Notion
 credentials are missing or calls fail.
+
+Both backends expose save_articles / load_articles so the runner can cache
+collected articles and skip re-fetching when news_collected is already True.
 """
 
 from __future__ import annotations
@@ -10,11 +13,15 @@ from __future__ import annotations
 import json
 import sqlite3
 from dataclasses import asdict, dataclass, field
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
+from typing import List, TYPE_CHECKING
 
 import config
 from logger import get_logger
+
+if TYPE_CHECKING:
+    from collector.rss_collector import Article
 
 log = get_logger(__name__)
 
@@ -111,6 +118,25 @@ class NotionStatusManager:
             )
         log.debug("Notion status saved for %s", status.date)
 
+    def _find_or_create_page(self, date_str: str) -> str:
+        page_id = self._find_page(date_str)
+        if not page_id:
+            self.save(DailyStatus(date=date_str))
+            page_id = self._find_page(date_str)
+        return page_id  # type: ignore[return-value]
+
+    def save_articles(self, date_str: str, articles: "List[Article]") -> None:
+        from notion.article_store import save_articles_to_page
+        page_id = self._find_or_create_page(date_str)
+        save_articles_to_page(self._client, page_id, articles)
+
+    def load_articles(self, date_str: str) -> "List[Article]":
+        from notion.article_store import load_articles_from_page
+        page_id = self._find_page(date_str)
+        if not page_id:
+            return []
+        return load_articles_from_page(self._client, page_id)
+
 
 # ---------------------------------------------------------------------------
 # SQLite backend
@@ -137,6 +163,14 @@ class SQLiteStatusManager:
                     discord_notified INTEGER DEFAULT 0,
                     youtube_url TEXT DEFAULT '',
                     error_log TEXT DEFAULT ''
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS daily_articles (
+                    date TEXT PRIMARY KEY,
+                    articles_json TEXT DEFAULT '[]'
                 )
                 """
             )
@@ -200,6 +234,41 @@ class SQLiteStatusManager:
                 },
             )
         log.debug("SQLite status saved for %s", status.date)
+
+    def save_articles(self, date_str: str, articles: "List[Article]") -> None:
+        data = [
+            {"title": a.title, "url": a.url, "source": a.source, "language": a.language}
+            for a in articles
+        ]
+        with sqlite3.connect(self._db_path) as conn:
+            conn.execute(
+                """
+                INSERT INTO daily_articles(date, articles_json) VALUES(?, ?)
+                ON CONFLICT(date) DO UPDATE SET articles_json = excluded.articles_json
+                """,
+                (date_str, json.dumps(data, ensure_ascii=False)),
+            )
+        log.debug("SQLite articles saved for %s (%d items)", date_str, len(articles))
+
+    def load_articles(self, date_str: str) -> "List[Article]":
+        from collector.rss_collector import Article
+
+        with sqlite3.connect(self._db_path) as conn:
+            row = conn.execute(
+                "SELECT articles_json FROM daily_articles WHERE date = ?", (date_str,)
+            ).fetchone()
+        if not row:
+            return []
+        return [
+            Article(
+                title=d["title"],
+                url=d["url"],
+                published_at=datetime.now(timezone.utc),
+                source=d["source"],
+                language=d["language"],
+            )
+            for d in json.loads(row[0])
+        ]
 
 
 # ---------------------------------------------------------------------------

@@ -106,3 +106,101 @@ AttributeError: 'Playwright' object has no attribute '__exit__'. Did you mean: '
 2026-05-03 02:33:23,316 [INFO] __main__: ====== Evening pipeline start (2026-05-03) ======
 2026-05-03 02:33:23,488 [INFO] notion.status_manager: Using Notion status manager
 2026-05-03 02:33:25,890 [ERROR] __main__: No metadata available – cannot proceed with evening pipeline
+2026-05-03 02:48:48,221 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 02:48:48,221 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 02:48:48,414 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 02:48:49,038 [INFO] __main__: === Step: collect news (2026-05-03) ===
+2026-05-03 02:48:49,611 [DEBUG] collector.rss_collector: RSS [google_news_ja_ai]: 100 entries
+2026-05-03 02:48:50,551 [DEBUG] collector.rss_collector: RSS [google_news_ja_game]: 70 entries
+2026-05-03 02:48:51,463 [DEBUG] collector.rss_collector: RSS [google_news_en_ai]: 100 entries
+2026-05-03 02:48:52,072 [DEBUG] collector.rss_collector: RSS [google_news_en_game]: 100 entries
+2026-05-03 02:48:52,231 [DEBUG] collector.rss_collector: RSS [4gamer]: 100 entries
+2026-05-03 02:48:52,433 [DEBUG] collector.rss_collector: RSS [famitsu]: 0 entries
+2026-05-03 02:48:52,541 [DEBUG] collector.rss_collector: RSS [aimedia]: 0 entries
+2026-05-03 02:48:52,660 [DEBUG] collector.rss_collector: RSS [techcrunch_ai]: 20 entries
+2026-05-03 02:48:52,956 [DEBUG] collector.rss_collector: RSS [venturebeat_ai]: 7 entries
+2026-05-03 02:48:52,956 [INFO] collector.rss_collector: RSS collected 39 articles total
+2026-05-03 02:48:53,453 [DEBUG] collector.newsapi_collector: NewsAPI [artificial intelligence]: fetched 0 items
+2026-05-03 02:48:53,911 [DEBUG] collector.newsapi_collector: NewsAPI [generative AI LLM]: fetched 0 items
+2026-05-03 02:48:54,335 [DEBUG] collector.newsapi_collector: NewsAPI [gaming industry]: fetched 0 items
+2026-05-03 02:48:54,786 [DEBUG] collector.newsapi_collector: NewsAPI [video game release]: fetched 0 items
+2026-05-03 02:48:55,246 [DEBUG] collector.newsapi_collector: NewsAPI [large language model]: fetched 0 items
+2026-05-03 02:48:55,246 [INFO] collector.newsapi_collector: NewsAPI collected 0 articles total
+2026-05-03 02:48:55,284 [INFO] collector.filter: Filtered to 10 articles (from 38 candidates, min=2)
+2026-05-03 02:48:55,285 [INFO] __main__: Selected 10 articles for today
+2026-05-03 02:48:55,285 [INFO] __main__:   1. [JA] Steamで“非常に好評”の高難度アクションADV「Constance」，コンシューマ版を発売。アーティストが自らの精神世界からの脱出を目指す
+2026-05-03 02:48:55,285 [INFO] __main__:   2. [JA] 「Magical Blush」制作発表。呪文コンボシステムとメトロイドヴァニア風の探索を組み合わせた2Dアクションアドベンチャー
+2026-05-03 02:48:55,285 [INFO] __main__:   3. [JA] 「NTE」，グローバル版リリース初日の売上が23億円を突破。内訳の75％をPCおよびPS5版が占め，脱モバイルの流れが一層鮮明に
+2026-05-03 02:48:55,285 [INFO] __main__:   4. [JA] 「ゆんゆん電波シンドローム」を遊んで“電波ソング”の魅力を再認識。1990年代から2000年代の成人向けゲームと電波ソングという熱狂に思いを馳せる
+2026-05-03 02:48:55,285 [INFO] __main__:   5. [JA] 埼玉県川越市のお寺でインディーゲーム!?　一体何が起こっていたのか──「ぶらり川越 GAME DIGG 2」で過ごした楽しい1日をレポート
+2026-05-03 02:48:55,285 [INFO] __main__:   6. [JA] マイクに向かって吠え合う“犬なりきり”対戦ゲーム「ワンワンバトル」，Steamで配信開始
+2026-05-03 02:48:55,285 [INFO] __main__:   7. [JA] 死ぬ。復活する。自分の死体を道にする。立体パズルゲーム「Re:Re:Re:Respawn」，SteamストアページとティザーPVを公開
+2026-05-03 02:48:55,285 [INFO] __main__:   8. [JA] 「Die in the Dungeon」，アーリーアクセスを終了して製品版に移行。ダイスでデッキを組むユニークなターン制ローグライト
+2026-05-03 02:48:55,285 [INFO] __main__:   9. [JA] ［プレイレポ］「Apex Legends」新レジェンド「アクセル」は，機動力特化のスカーミッシャークラス。戦場をレース場に変える能力をチェックだ
+2026-05-03 02:48:55,285 [INFO] __main__:   10. [JA] 【AI予想・天皇賞(春)】ハイレベル世代の総大将が格の違いを見せる!? 不安らしい不安がない人工知能の本命馬 - netkeiba
+2026-05-03 02:48:55,889 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 02:48:55,889 [INFO] __main__: === Step: NotebookLM generation ===
+2026-05-03 02:48:55,889 [WARNING] notebooklm.client: notebooklm-py unavailable (cannot import name 'NotebookLM' from 'notebooklm' (C:\#Project\Server\DailyCatchUp\notebooklm\__init__.py)) – switching to Playwright fallback
+2026-05-03 02:48:57,631 [INFO] notebooklm.playwright_fallback: Logging in to Google account
+2026-05-03 02:49:13,370 [DEBUG] notebooklm.playwright_fallback: Session saved to C:\#Project\Server\DailyCatchUp\.notebooklm_session.json
+2026-05-03 02:49:13,414 [ERROR] notebooklm.client: NotebookLM creation failed: Page.wait_for_selector: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator("input[type=\"password\"]") to be visible
+
+2026-05-03 02:49:13,416 [ERROR] __main__: Morning pipeline error: Page.wait_for_selector: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator("input[type=\"password\"]") to be visible
+
+Traceback (most recent call last):
+  File "C:\#Project\Server\DailyCatchUp\scheduler\runner.py", line 191, in run_morning_pipeline
+    _, nlm_result = step_notebooklm(articles, date_str)
+                    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\#Project\Server\DailyCatchUp\scheduler\runner.py", line 85, in step_notebooklm
+    result = client.create_notebook_with_articles(title, articles)
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\client.py", line 66, in create_notebook_with_articles
+    return client.create_notebook_with_articles(title, articles)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\playwright_fallback.py", line 116, in create_notebook_with_articles
+    self._login()
+    ~~~~~~~~~~~^^
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\playwright_fallback.py", line 79, in _login
+    page.wait_for_selector('input[type="password"]', state="visible", timeout=15_000)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\sync_api\_generated.py", line 8525, in wait_for_selector
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.wait_for_selector(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            selector=selector, timeout=timeout, state=state, strict=strict
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        )
+        ^
+    )
+    ^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_page.py", line 419, in wait_for_selector
+    return await self._main_frame.wait_for_selector(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_frame.py", line 369, in wait_for_selector
+    await self._channel.send(
+        "waitForSelector", self._timeout, locals_to_params(locals())
+    )
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator("input[type=\"password\"]") to be visible
+
+
+2026-05-03 02:49:14,100 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 02:49:15,277 [INFO] __main__: ====== Evening pipeline start (2026-05-03) ======
+2026-05-03 02:49:15,511 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 02:49:16,174 [ERROR] __main__: No metadata available – cannot proceed with evening pipeline

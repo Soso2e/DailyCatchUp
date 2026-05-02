@@ -181,10 +181,21 @@ def run_morning_pipeline() -> None:
     status = status_mgr.get(date_str)
 
     try:
-        # 1. Collect
-        articles = step_collect(date_str)
-        status.news_collected = True
-        status_mgr.save(status)
+        # 1. Collect (skip if already done today – load cached articles from Notion/SQLite)
+        if status.news_collected:
+            log.info("news_collected already True – loading cached articles")
+            articles = status_mgr.load_articles(date_str)
+            if articles:
+                log.info("Loaded %d cached articles, skipping API calls", len(articles))
+            else:
+                log.warning("Cache empty despite news_collected=True, re-collecting")
+                articles = step_collect(date_str)
+                status_mgr.save_articles(date_str, articles)
+        else:
+            articles = step_collect(date_str)
+            status.news_collected = True
+            status_mgr.save(status)
+            status_mgr.save_articles(date_str, articles)
         _pipeline_state["articles"] = articles
 
         # 2. NotebookLM
