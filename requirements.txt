@@ -1,0 +1,34 @@
+# Core
+python-dotenv>=1.0.0
+httpx>=0.27.0
+
+# News collection
+feedparser>=6.0.11
+newsapi-python>=0.2.7
+
+# NotebookLM
+notebooklm-py>=0.1.0
+playwright>=1.44.0
+
+# Claude API
+anthropic>=0.30.0
+
+# Thumbnail
+Pillow>=10.3.0
+
+# Notion
+notion-client>=2.2.1
+
+# YouTube
+google-api-python-client>=2.134.0
+google-auth-httplib2>=0.2.0
+google-auth-oauthlib>=1.2.0
+
+# Discord
+discord.py>=2.3.2
+
+# Scheduler
+schedule>=1.2.2
+
+# Utilities
+tenacity>=8.3.0
