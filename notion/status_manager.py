@@ -43,6 +43,7 @@ class DailyStatus:
     youtube_uploaded: bool = False
     discord_notified: bool = False
     notebook_id: str = ""
+    notebook_url: str = ""
     sources_added_count: int = 0
     selected_article_count: int = 0
     last_step: str = ""
@@ -110,6 +111,7 @@ class NotionStatusManager:
             youtube_uploaded=cb("youtube_uploaded"),
             discord_notified=cb("discord_notified"),
             notebook_id=txt("notebook_id"),
+            notebook_url=url("notebook_url"),
             sources_added_count=number("sources_added_count"),
             selected_article_count=number("selected_article_count"),
             last_step=txt("last_step"),
@@ -137,6 +139,8 @@ class NotionStatusManager:
             if self._has_property(key):
                 props[key] = {"checkbox": value}
 
+        if self._has_property("notebook_url"):
+            props["notebook_url"] = {"url": status.notebook_url or None}
         if self._has_property("youtube_url"):
             props["youtube_url"] = {"url": status.youtube_url or None}
         if self._has_property("error_log"):
@@ -213,6 +217,7 @@ class SQLiteStatusManager:
                     youtube_uploaded INTEGER DEFAULT 0,
                     discord_notified INTEGER DEFAULT 0,
                     notebook_id TEXT DEFAULT '',
+                    notebook_url TEXT DEFAULT '',
                     sources_added_count INTEGER DEFAULT 0,
                     selected_article_count INTEGER DEFAULT 0,
                     last_step TEXT DEFAULT '',
@@ -240,6 +245,7 @@ class SQLiteStatusManager:
             "source_added": "INTEGER DEFAULT 0",
             "generation_requested": "INTEGER DEFAULT 0",
             "notebook_id": "TEXT DEFAULT ''",
+            "notebook_url": "TEXT DEFAULT ''",
             "sources_added_count": "INTEGER DEFAULT 0",
             "selected_article_count": "INTEGER DEFAULT 0",
             "last_step": "TEXT DEFAULT ''",
@@ -270,6 +276,7 @@ class SQLiteStatusManager:
                 youtube_uploaded=bool(row["youtube_uploaded"]),
                 discord_notified=bool(row["discord_notified"]),
                 notebook_id=row["notebook_id"] or "",
+                notebook_url=row["notebook_url"] or "",
                 sources_added_count=int(row["sources_added_count"] or 0),
                 selected_article_count=int(row["selected_article_count"] or 0),
                 last_step=row["last_step"] or "",
@@ -286,7 +293,7 @@ class SQLiteStatusManager:
                     :generation_requested, :notebooklm_generated,
                     :audio_downloaded, :video_downloaded, :meta_generated,
                     :discord_morning, :youtube_uploaded, :discord_notified,
-                    :notebook_id, :sources_added_count, :selected_article_count,
+                    :notebook_id, :notebook_url, :sources_added_count, :selected_article_count,
                     :last_step, :youtube_url, :error_log
                 )
                 ON CONFLICT(date) DO UPDATE SET
@@ -302,6 +309,7 @@ class SQLiteStatusManager:
                     youtube_uploaded=excluded.youtube_uploaded,
                     discord_notified=excluded.discord_notified,
                     notebook_id=excluded.notebook_id,
+                    notebook_url=excluded.notebook_url,
                     sources_added_count=excluded.sources_added_count,
                     selected_article_count=excluded.selected_article_count,
                     last_step=excluded.last_step,
@@ -322,6 +330,7 @@ class SQLiteStatusManager:
                     "youtube_uploaded": int(status.youtube_uploaded),
                     "discord_notified": int(status.discord_notified),
                     "notebook_id": status.notebook_id,
+                    "notebook_url": status.notebook_url,
                     "sources_added_count": status.sources_added_count,
                     "selected_article_count": status.selected_article_count,
                     "last_step": status.last_step,

@@ -208,14 +208,16 @@ def run_morning_pipeline() -> None:
         else:
             create_result = client.create_notebook(f"AI・ゲームニュース {date_str}")
             notebook_id = create_result.notebook_id
+            nb_url = f"https://notebooklm.google.com/notebook/{notebook_id}"
             _update_status(
                 status_mgr,
                 status,
                 notebook_created=True,
                 notebook_id=notebook_id,
+                notebook_url=nb_url,
                 last_step="notebook_created",
             )
-            log.info("Notebook created: id=%s", notebook_id)
+            log.info("Notebook created: id=%s url=%s", notebook_id, nb_url)
 
         if status.source_added and status.sources_added_count > 0:
             added_count = status.sources_added_count
@@ -243,12 +245,14 @@ def run_morning_pipeline() -> None:
 
         log.info("Polling for generation completion (max %ds)...", config.NOTEBOOKLM_MAX_WAIT)
         nlm_result = poll_until_ready(client, notebook_id, need_audio=True, need_video=True)
-        _update_status(
-            status_mgr,
-            status,
-            notebooklm_generated=nlm_result.audio_ready or nlm_result.video_ready,
-            last_step="generated" if (nlm_result.audio_ready or nlm_result.video_ready) else "polled",
-        )
+        generated = nlm_result.audio_ready or nlm_result.video_ready
+        gen_updates: dict = {
+            "notebooklm_generated": generated,
+            "last_step": "generated" if generated else "polled",
+        }
+        if not status.notebook_url:
+            gen_updates["notebook_url"] = f"https://notebooklm.google.com/notebook/{notebook_id}"
+        _update_status(status_mgr, status, **gen_updates)
         _pipeline_state["nlm_result"] = nlm_result
 
         paths = step_download(nlm_result, date_str)

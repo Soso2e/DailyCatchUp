@@ -1002,3 +1002,79 @@ google.genai.errors.ClientError: 400 INVALID_ARGUMENT. {'error': {'code': 400, '
 2026-05-03 05:05:15,391 [INFO] __main__: ====== Evening pipeline start (2026-05-03) ======
 2026-05-03 05:05:15,599 [INFO] notion.status_manager: Using Notion status manager
 2026-05-03 05:05:16,079 [ERROR] __main__: No metadata available – cannot proceed with evening pipeline
+2026-05-03 05:06:37,216 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 05:06:37,216 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 05:06:37,778 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 05:06:38,831 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:06:38,831 [INFO] __main__: news_collected already True - loading cached articles
+2026-05-03 05:06:39,268 [INFO] notion.article_store: Loaded 10 articles from Notion page 354d7670-ba17-81c2-9de4-dc857221f51c
+2026-05-03 05:06:39,268 [WARNING] notebooklm.client: notebooklm-py unavailable (cannot import name 'NotebookLM' from 'notebooklm' (C:\#Project\Server\DailyCatchUp\notebooklm\__init__.py)) – switching to Playwright fallback
+2026-05-03 05:06:40,479 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:06:43,695 [INFO] notebooklm.playwright_fallback: Playwright created notebook id=b873ec75-0f56-4efa-bb18-03b3097d52d1?addSource=true
+2026-05-03 05:06:44,389 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:06:44,389 [INFO] __main__: Notebook created: id=b873ec75-0f56-4efa-bb18-03b3097d52d1?addSource=true
+2026-05-03 05:06:45,359 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:06:46,631 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/b873ec75-0f56-4efa-bb18-03b3097d52d1?addSource=true target=https://www.4gamer.net/games/981/G098149/20260501001/
+2026-05-03 05:06:53,831 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/981/G098149/20260501001/
+2026-05-03 05:06:53,831 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/b873ec75-0f56-4efa-bb18-03b3097d52d1 target=https://www.4gamer.net/games/004/G100422/20260502002/
+2026-05-03 05:06:57,933 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/004/G100422/20260502002/
+2026-05-03 05:06:57,933 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/b873ec75-0f56-4efa-bb18-03b3097d52d1 target=https://www.4gamer.net/games/817/G081722/20260502001/
+2026-05-03 05:07:02,022 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/817/G081722/20260502001/
+2026-05-03 05:07:02,022 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/b873ec75-0f56-4efa-bb18-03b3097d52d1 target=https://www.4gamer.net/games/802/G080235/20260501037/
+2026-05-03 05:07:06,110 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/802/G080235/20260501037/
+2026-05-03 05:07:06,110 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/b873ec75-0f56-4efa-bb18-03b3097d52d1 target=https://www.4gamer.net/games/991/G999110/20260501022/
+2026-05-03 05:07:10,197 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/991/G999110/20260501022/
+2026-05-03 05:07:10,197 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/b873ec75-0f56-4efa-bb18-03b3097d52d1 target=https://www.4gamer.net/games/996/G099664/20260501069/
+2026-05-03 05:07:14,293 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/996/G099664/20260501069/
+2026-05-03 05:07:14,293 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/b873ec75-0f56-4efa-bb18-03b3097d52d1 target=https://www.4gamer.net/games/004/G100420/20260501063/
+2026-05-03 05:07:18,408 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/004/G100420/20260501063/
+2026-05-03 05:07:18,408 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/b873ec75-0f56-4efa-bb18-03b3097d52d1 target=https://www.4gamer.net/games/758/G075809/20260502006/
+2026-05-03 05:07:22,541 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/758/G075809/20260502006/
+2026-05-03 05:07:22,541 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/b873ec75-0f56-4efa-bb18-03b3097d52d1 target=https://www.4gamer.net/games/449/G044914/20260501051/
+2026-05-03 05:07:26,700 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/449/G044914/20260501051/
+2026-05-03 05:07:26,700 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/b873ec75-0f56-4efa-bb18-03b3097d52d1 target=https://news.google.com/rss/articles/CBMiX0FVX3lxTFBCWnlrYzc1bUlsUldOb1JRbWpZSmNSakMzWUdVZkpPbVV0UGVvQTNGOHAxeE8zT0ZyQTRFMy1FeVVEaWZNQ3oxWmRCb0hKMzBMc2RPMjdBd01DYnRyN0dv?oc=5
+2026-05-03 05:07:30,819 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://news.google.com/rss/articles/CBMiX0FVX3lxTFBCWnlrYzc
+2026-05-03 05:07:30,819 [INFO] notebooklm.playwright_fallback: Playwright added 10/10 sources
+2026-05-03 05:07:31,668 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:07:32,682 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:07:34,678 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:07:34,679 [INFO] __main__: Polling for generation completion (max 900s)...
+2026-05-03 05:07:36,108 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:07:37,505 [INFO] notebooklm.poller: Poll #1 – audio=False video=False summary=False
+2026-05-03 05:07:37,506 [DEBUG] notebooklm.poller: Waiting 60s (897s remaining)
+2026-05-03 05:08:38,536 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:08:39,932 [INFO] notebooklm.poller: Poll #2 – audio=False video=False summary=False
+2026-05-03 05:08:39,932 [DEBUG] notebooklm.poller: Waiting 60s (834s remaining)
+2026-05-03 05:09:40,995 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:09:42,072 [INFO] notebooklm.poller: Poll #3 – audio=False video=False summary=False
+2026-05-03 05:09:42,072 [DEBUG] notebooklm.poller: Waiting 60s (772s remaining)
+2026-05-03 05:10:43,089 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:10:44,500 [INFO] notebooklm.poller: Poll #4 – audio=False video=False summary=False
+2026-05-03 05:10:44,501 [DEBUG] notebooklm.poller: Waiting 60s (710s remaining)
+2026-05-03 05:11:45,558 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:11:46,569 [INFO] notebooklm.poller: Poll #5 – audio=False video=False summary=False
+2026-05-03 05:11:46,569 [DEBUG] notebooklm.poller: Waiting 60s (648s remaining)
+2026-05-03 05:12:47,822 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:12:48,831 [INFO] notebooklm.poller: Poll #6 – audio=False video=False summary=False
+2026-05-03 05:12:48,831 [DEBUG] notebooklm.poller: Waiting 60s (585s remaining)
+2026-05-03 05:13:49,947 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:13:51,318 [INFO] notebooklm.poller: Poll #7 – audio=False video=False summary=False
+2026-05-03 05:13:51,318 [DEBUG] notebooklm.poller: Waiting 60s (523s remaining)
+2026-05-03 05:14:52,358 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:14:53,738 [INFO] notebooklm.poller: Poll #8 – audio=False video=False summary=False
+2026-05-03 05:14:53,738 [DEBUG] notebooklm.poller: Waiting 60s (460s remaining)
+2026-05-03 05:15:54,811 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:15:56,182 [INFO] notebooklm.poller: Poll #9 – audio=False video=False summary=False
+2026-05-03 05:15:56,182 [DEBUG] notebooklm.poller: Waiting 60s (398s remaining)
+2026-05-03 05:16:57,221 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:16:58,240 [INFO] notebooklm.poller: Poll #10 – audio=False video=False summary=False
+2026-05-03 05:16:58,241 [DEBUG] notebooklm.poller: Waiting 60s (336s remaining)
+2026-05-03 05:17:59,250 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:18:00,244 [INFO] notebooklm.poller: Poll #11 – audio=False video=False summary=False
+2026-05-03 05:18:00,244 [DEBUG] notebooklm.poller: Waiting 60s (274s remaining)
+2026-05-03 05:19:01,311 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:19:02,683 [INFO] notebooklm.poller: Poll #12 – audio=False video=False summary=False
+2026-05-03 05:19:02,683 [DEBUG] notebooklm.poller: Waiting 60s (211s remaining)
+2026-05-03 05:20:03,776 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:20:05,191 [INFO] notebooklm.poller: Poll #13 – audio=False video=False summary=False
+2026-05-03 05:20:05,191 [DEBUG] notebooklm.poller: Waiting 60s (149s remaining)
