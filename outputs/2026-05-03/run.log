@@ -300,3 +300,638 @@ Call log:
 2026-05-03 03:47:15,810 [INFO] __main__: ====== Evening pipeline start (2026-05-03) ======
 2026-05-03 03:47:15,994 [INFO] notion.status_manager: Using Notion status manager
 2026-05-03 03:47:16,609 [ERROR] __main__: No metadata available – cannot proceed with evening pipeline
+2026-05-03 03:56:38,503 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 03:56:38,503 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 03:56:38,698 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 03:56:39,303 [INFO] __main__: news_collected already True – loading cached articles
+2026-05-03 03:56:39,780 [INFO] notion.article_store: Loaded 10 articles from Notion page 354d7670-ba17-81c2-9de4-dc857221f51c
+2026-05-03 03:56:39,781 [INFO] __main__: Loaded 10 cached articles, skipping API calls
+2026-05-03 03:56:39,781 [INFO] __main__: === Step: NotebookLM generation ===
+2026-05-03 03:56:39,781 [WARNING] notebooklm.client: notebooklm-py unavailable (cannot import name 'NotebookLM' from 'notebooklm' (C:\#Project\Server\DailyCatchUp\notebooklm\__init__.py)) – switching to Playwright fallback
+2026-05-03 03:56:43,609 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 03:57:18,678 [ERROR] notebooklm.client: NotebookLM creation failed: Timeout 30000ms exceeded.
+2026-05-03 03:57:18,679 [ERROR] __main__: Morning pipeline error: Timeout 30000ms exceeded.
+Traceback (most recent call last):
+  File "C:\#Project\Server\DailyCatchUp\scheduler\runner.py", line 202, in run_morning_pipeline
+    _, nlm_result = step_notebooklm(articles, date_str)
+                    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\#Project\Server\DailyCatchUp\scheduler\runner.py", line 85, in step_notebooklm
+    result = client.create_notebook_with_articles(title, articles)
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\client.py", line 66, in create_notebook_with_articles
+    return client.create_notebook_with_articles(title, articles)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\playwright_fallback.py", line 107, in create_notebook_with_articles
+    notebook_id = self._create_notebook(title)
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\playwright_fallback.py", line 137, in _create_notebook
+    page.wait_for_load_state("networkidle", timeout=30_000)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\sync_api\_generated.py", line 9460, in wait_for_load_state
+    self._sync(self._impl_obj.wait_for_load_state(state=state, timeout=timeout))
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_page.py", line 572, in wait_for_load_state
+    return await self._main_frame.wait_for_load_state(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_frame.py", line 273, in wait_for_load_state
+    return await self._wait_for_load_state_impl(state, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_frame.py", line 301, in _wait_for_load_state_impl
+    await waiter.result()
+playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+
+2026-05-03 03:57:19,297 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 03:57:19,854 [INFO] __main__: ====== Evening pipeline start (2026-05-03) ======
+2026-05-03 03:57:20,062 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 03:57:20,586 [ERROR] __main__: No metadata available – cannot proceed with evening pipeline
+2026-05-03 04:09:23,407 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 04:09:23,407 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 04:09:23,606 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 04:09:25,557 [INFO] __main__: news_collected already True – loading cached articles
+2026-05-03 04:09:26,019 [INFO] notion.article_store: Loaded 10 articles from Notion page 354d7670-ba17-81c2-9de4-dc857221f51c
+2026-05-03 04:09:26,019 [INFO] __main__: Loaded 10 cached articles, skipping API calls
+2026-05-03 04:09:26,020 [INFO] __main__: === Step: NotebookLM generation ===
+2026-05-03 04:09:26,020 [WARNING] notebooklm.client: notebooklm-py unavailable (cannot import name 'NotebookLM' from 'notebooklm' (C:\#Project\Server\DailyCatchUp\notebooklm\__init__.py)) – switching to Playwright fallback
+2026-05-03 04:09:27,560 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:09:58,063 [ERROR] notebooklm.client: NotebookLM creation failed: Page.wait_for_selector: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("textarea, [role='main']") to be visible
+
+2026-05-03 04:09:58,064 [ERROR] __main__: Morning pipeline error: Page.wait_for_selector: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("textarea, [role='main']") to be visible
+
+Traceback (most recent call last):
+  File "C:\#Project\Server\DailyCatchUp\scheduler\runner.py", line 202, in run_morning_pipeline
+    _, nlm_result = step_notebooklm(articles, date_str)
+                    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\#Project\Server\DailyCatchUp\scheduler\runner.py", line 85, in step_notebooklm
+    result = client.create_notebook_with_articles(title, articles)
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\client.py", line 66, in create_notebook_with_articles
+    return client.create_notebook_with_articles(title, articles)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\playwright_fallback.py", line 107, in create_notebook_with_articles
+    notebook_id = self._create_notebook(title)
+  File "C:\#Project\Server\DailyCatchUp\notebooklm\playwright_fallback.py", line 119, in _create_notebook
+    page.wait_for_selector("textarea, [role='main']", timeout=30_000)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\sync_api\_generated.py", line 8525, in wait_for_selector
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.wait_for_selector(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            selector=selector, timeout=timeout, state=state, strict=strict
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        )
+        ^
+    )
+    ^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_page.py", line 419, in wait_for_selector
+    return await self._main_frame.wait_for_selector(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_frame.py", line 369, in wait_for_selector
+    await self._channel.send(
+        "waitForSelector", self._timeout, locals_to_params(locals())
+    )
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("textarea, [role='main']") to be visible
+
+
+2026-05-03 04:09:59,266 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 04:09:59,852 [INFO] __main__: ====== Evening pipeline start (2026-05-03) ======
+2026-05-03 04:10:00,063 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 04:10:00,558 [ERROR] __main__: No metadata available – cannot proceed with evening pipeline
+2026-05-03 04:17:37,946 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 04:17:37,947 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 04:17:38,136 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 04:17:38,655 [INFO] __main__: news_collected already True – loading cached articles
+2026-05-03 04:17:39,086 [INFO] notion.article_store: Loaded 10 articles from Notion page 354d7670-ba17-81c2-9de4-dc857221f51c
+2026-05-03 04:17:39,086 [INFO] __main__: Loaded 10 cached articles, skipping API calls
+2026-05-03 04:17:39,086 [INFO] __main__: === Step: NotebookLM generation ===
+2026-05-03 04:17:39,087 [WARNING] notebooklm.client: notebooklm-py unavailable (cannot import name 'NotebookLM' from 'notebooklm' (C:\#Project\Server\DailyCatchUp\notebooklm\__init__.py)) – switching to Playwright fallback
+2026-05-03 04:17:40,278 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:17:43,014 [INFO] notebooklm.playwright_fallback: Playwright created notebook id=a2c82a71-1cf4-45f6-b5c7-2a97ec4d7c28?addSource=true
+2026-05-03 04:17:53,015 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/981/G098149/20260501001/: Locator.wait_for: Timeout 10000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)).first to be visible
+
+2026-05-03 04:18:03,018 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/004/G100422/20260502002/: Locator.wait_for: Timeout 10000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)).first to be visible
+
+2026-05-03 04:18:13,020 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/817/G081722/20260502001/: Locator.wait_for: Timeout 10000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)).first to be visible
+
+2026-05-03 04:18:23,020 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/802/G080235/20260501037/: Locator.wait_for: Timeout 10000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)).first to be visible
+
+2026-05-03 04:18:33,021 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/991/G999110/20260501022/: Locator.wait_for: Timeout 10000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)).first to be visible
+
+2026-05-03 04:18:43,022 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/996/G099664/20260501069/: Locator.wait_for: Timeout 10000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)).first to be visible
+
+2026-05-03 04:18:53,024 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/004/G100420/20260501063/: Locator.wait_for: Timeout 10000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)).first to be visible
+
+2026-05-03 04:19:03,025 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/758/G075809/20260502006/: Locator.wait_for: Timeout 10000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)).first to be visible
+
+2026-05-03 04:19:13,027 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/449/G044914/20260501051/: Locator.wait_for: Timeout 10000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)).first to be visible
+
+2026-05-03 04:19:23,031 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://news.google.com/rss/articles/CBMiX0FVX3lxTFBCWnlrYzc1bUlsUldOb1JRbWpZSmNSakMzWUdVZkpPbVV0UGVvQTNGOHAxeE8zT0ZyQTRFMy1FeVVEaWZNQ3oxWmRCb0hKMzBMc2RPMjdBd01DYnRyN0dv?oc=5: Locator.wait_for: Timeout 10000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)).first to be visible
+
+2026-05-03 04:19:23,160 [INFO] __main__: Notebook created: id=a2c82a71-1cf4-45f6-b5c7-2a97ec4d7c28?addSource=true
+2026-05-03 04:19:23,160 [INFO] __main__: Polling for generation completion (max 900s)...
+2026-05-03 04:19:24,211 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:19:25,654 [INFO] notebooklm.poller: Poll #1 – audio=False video=False summary=False
+2026-05-03 04:19:25,654 [DEBUG] notebooklm.poller: Waiting 60s (897s remaining)
+2026-05-03 04:20:26,737 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:20:28,160 [INFO] notebooklm.poller: Poll #2 – audio=False video=False summary=False
+2026-05-03 04:20:28,160 [DEBUG] notebooklm.poller: Waiting 60s (835s remaining)
+2026-05-03 04:21:29,223 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:21:30,612 [INFO] notebooklm.poller: Poll #3 – audio=False video=False summary=False
+2026-05-03 04:21:30,612 [DEBUG] notebooklm.poller: Waiting 60s (772s remaining)
+2026-05-03 04:22:31,672 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:22:33,073 [INFO] notebooklm.poller: Poll #4 – audio=False video=False summary=False
+2026-05-03 04:22:33,073 [DEBUG] notebooklm.poller: Waiting 60s (710s remaining)
+2026-05-03 04:23:34,109 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:23:35,474 [INFO] notebooklm.poller: Poll #5 – audio=False video=False summary=False
+2026-05-03 04:23:35,474 [DEBUG] notebooklm.poller: Waiting 60s (647s remaining)
+2026-05-03 04:24:36,772 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:24:37,729 [INFO] notebooklm.poller: Poll #6 – audio=False video=False summary=False
+2026-05-03 04:24:37,729 [DEBUG] notebooklm.poller: Waiting 60s (585s remaining)
+2026-05-03 04:25:38,766 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:25:39,639 [INFO] notebooklm.poller: Poll #7 – audio=False video=False summary=False
+2026-05-03 04:25:39,639 [DEBUG] notebooklm.poller: Waiting 60s (523s remaining)
+2026-05-03 04:26:40,661 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:26:42,058 [INFO] notebooklm.poller: Poll #8 – audio=False video=False summary=False
+2026-05-03 04:26:42,058 [DEBUG] notebooklm.poller: Waiting 60s (461s remaining)
+2026-05-03 04:27:43,102 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:27:44,021 [INFO] notebooklm.poller: Poll #9 – audio=False video=False summary=False
+2026-05-03 04:27:44,021 [DEBUG] notebooklm.poller: Waiting 60s (399s remaining)
+2026-05-03 04:28:45,116 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:28:46,528 [INFO] notebooklm.poller: Poll #10 – audio=False video=False summary=False
+2026-05-03 04:28:46,528 [DEBUG] notebooklm.poller: Waiting 60s (336s remaining)
+2026-05-03 04:29:47,622 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:29:48,588 [INFO] notebooklm.poller: Poll #11 – audio=False video=False summary=False
+2026-05-03 04:29:48,588 [DEBUG] notebooklm.poller: Waiting 60s (274s remaining)
+2026-05-03 04:36:10,177 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 04:36:10,177 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 04:36:10,369 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 04:36:10,919 [INFO] __main__: news_collected already True – loading cached articles
+2026-05-03 04:36:12,078 [INFO] notion.article_store: Loaded 10 articles from Notion page 354d7670-ba17-81c2-9de4-dc857221f51c
+2026-05-03 04:36:12,078 [INFO] __main__: Loaded 10 cached articles, skipping API calls
+2026-05-03 04:36:12,078 [INFO] __main__: === Step: NotebookLM generation ===
+2026-05-03 04:36:12,078 [WARNING] notebooklm.client: notebooklm-py unavailable (cannot import name 'NotebookLM' from 'notebooklm' (C:\#Project\Server\DailyCatchUp\notebooklm\__init__.py)) – switching to Playwright fallback
+2026-05-03 04:36:13,288 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:36:16,048 [INFO] notebooklm.playwright_fallback: Playwright created notebook id=ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true
+2026-05-03 04:36:16,048 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true target=https://www.4gamer.net/games/981/G098149/20260501001/
+2026-05-03 04:36:46,610 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/981/G098149/20260501001/ at https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("textarea").first
+    - locator resolved to <textarea rows="1" matinput="" required="" id="mat-input-0" aria-required="true" cdktextareaautosize="" placeholder="ウェブで新しいソースを検索" _ngcontent-ng-c3814430686="" aria-label="入力されたクエリをもとにソースを検出する" formcontrolname="discoverSourcesQuery" jslog="274655;track:impression,input_text" class="mat-mdc-input-element cdk-textarea-autosize query-box-textarea ng-untouched ng-pristine ng-invalid mat-mdc-form-field-textarea-control mat-mdc-form-field-input-control mdc-text-field__input cdk-text-field-autofill-monitored"></textarea>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div class="cdk-overlay-container">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div class="cdk-overlay-container">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div class="cdk-overlay-container">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:36:46,610 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true target=https://www.4gamer.net/games/004/G100422/20260502002/
+2026-05-03 04:37:16,619 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/004/G100422/20260502002/ at https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"website|url|link|ウェブ", re.IGNORECASE)).first
+    - locator resolved to <button mat-button="" appearance="fill" aria-haspopup="menu" aria-expanded="true" _ngcontent-ng-c3814430686="" aria-controls="mat-menu-panel-9" jslog="282717;track:generic_click,impression" mat-ripple-loader-class-name="mat-mdc-button-ripple" class="mdc-button mat-mdc-button-base mat-mdc-menu-trigger corpus-select corpus-menu-trigger mat-mdc-button mat-unthemed">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:37:16,619 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true target=https://www.4gamer.net/games/817/G081722/20260502001/
+2026-05-03 04:37:46,627 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/817/G081722/20260502001/ at https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"website|url|link|ウェブ", re.IGNORECASE)).first
+    - locator resolved to <button mat-button="" appearance="fill" aria-haspopup="menu" aria-expanded="true" _ngcontent-ng-c3814430686="" aria-controls="mat-menu-panel-9" jslog="282717;track:generic_click,impression" mat-ripple-loader-class-name="mat-mdc-button-ripple" class="mdc-button mat-mdc-button-base mat-mdc-menu-trigger corpus-select corpus-menu-trigger mat-mdc-button mat-unthemed">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:37:46,627 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true target=https://www.4gamer.net/games/802/G080235/20260501037/
+2026-05-03 04:38:16,634 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/802/G080235/20260501037/ at https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"website|url|link|ウェブ", re.IGNORECASE)).first
+    - locator resolved to <button mat-button="" appearance="fill" aria-haspopup="menu" aria-expanded="true" _ngcontent-ng-c3814430686="" aria-controls="mat-menu-panel-9" jslog="282717;track:generic_click,impression" mat-ripple-loader-class-name="mat-mdc-button-ripple" class="mdc-button mat-mdc-button-base mat-mdc-menu-trigger corpus-select corpus-menu-trigger mat-mdc-button mat-unthemed">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:38:16,634 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true target=https://www.4gamer.net/games/991/G999110/20260501022/
+2026-05-03 04:38:46,640 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/991/G999110/20260501022/ at https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"website|url|link|ウェブ", re.IGNORECASE)).first
+    - locator resolved to <button mat-button="" appearance="fill" aria-haspopup="menu" aria-expanded="true" _ngcontent-ng-c3814430686="" aria-controls="mat-menu-panel-9" jslog="282717;track:generic_click,impression" mat-ripple-loader-class-name="mat-mdc-button-ripple" class="mdc-button mat-mdc-button-base mat-mdc-menu-trigger corpus-select corpus-menu-trigger mat-mdc-button mat-unthemed">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:38:46,640 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true target=https://www.4gamer.net/games/996/G099664/20260501069/
+2026-05-03 04:39:16,647 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/996/G099664/20260501069/ at https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"website|url|link|ウェブ", re.IGNORECASE)).first
+    - locator resolved to <button mat-button="" appearance="fill" aria-haspopup="menu" aria-expanded="true" _ngcontent-ng-c3814430686="" aria-controls="mat-menu-panel-9" jslog="282717;track:generic_click,impression" mat-ripple-loader-class-name="mat-mdc-button-ripple" class="mdc-button mat-mdc-button-base mat-mdc-menu-trigger corpus-select corpus-menu-trigger mat-mdc-button mat-unthemed">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:39:16,647 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true target=https://www.4gamer.net/games/004/G100420/20260501063/
+2026-05-03 04:39:46,654 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/004/G100420/20260501063/ at https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"website|url|link|ウェブ", re.IGNORECASE)).first
+    - locator resolved to <button mat-button="" appearance="fill" aria-haspopup="menu" aria-expanded="true" _ngcontent-ng-c3814430686="" aria-controls="mat-menu-panel-9" jslog="282717;track:generic_click,impression" mat-ripple-loader-class-name="mat-mdc-button-ripple" class="mdc-button mat-mdc-button-base mat-mdc-menu-trigger corpus-select corpus-menu-trigger mat-mdc-button mat-unthemed">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:39:46,654 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true target=https://www.4gamer.net/games/758/G075809/20260502006/
+2026-05-03 04:40:16,661 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/758/G075809/20260502006/ at https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"website|url|link|ウェブ", re.IGNORECASE)).first
+    - locator resolved to <button mat-button="" appearance="fill" aria-haspopup="menu" aria-expanded="true" _ngcontent-ng-c3814430686="" aria-controls="mat-menu-panel-9" jslog="282717;track:generic_click,impression" mat-ripple-loader-class-name="mat-mdc-button-ripple" class="mdc-button mat-mdc-button-base mat-mdc-menu-trigger corpus-select corpus-menu-trigger mat-mdc-button mat-unthemed">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:40:16,661 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true target=https://www.4gamer.net/games/449/G044914/20260501051/
+2026-05-03 04:40:46,668 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://www.4gamer.net/games/449/G044914/20260501051/ at https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"website|url|link|ウェブ", re.IGNORECASE)).first
+    - locator resolved to <button mat-button="" appearance="fill" aria-haspopup="menu" aria-expanded="true" _ngcontent-ng-c3814430686="" aria-controls="mat-menu-panel-9" jslog="282717;track:generic_click,impression" mat-ripple-loader-class-name="mat-mdc-button-ripple" class="mdc-button mat-mdc-button-base mat-mdc-menu-trigger corpus-select corpus-menu-trigger mat-mdc-button mat-unthemed">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:40:46,668 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true target=https://news.google.com/rss/articles/CBMiX0FVX3lxTFBCWnlrYzc1bUlsUldOb1JRbWpZSmNSakMzWUdVZkpPbVV0UGVvQTNGOHAxeE8zT0ZyQTRFMy1FeVVEaWZNQ3oxWmRCb0hKMzBMc2RPMjdBd01DYnRyN0dv?oc=5
+2026-05-03 04:41:16,676 [WARNING] notebooklm.playwright_fallback: Playwright add_source failed for https://news.google.com/rss/articles/CBMiX0FVX3lxTFBCWnlrYzc1bUlsUldOb1JRbWpZSmNSakMzWUdVZkpPbVV0UGVvQTNGOHAxeE8zT0ZyQTRFMy1FeVVEaWZNQ3oxWmRCb0hKMzBMc2RPMjdBd01DYnRyN0dv?oc=5 at https://notebooklm.google.com/notebook/ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"website|url|link|ウェブ", re.IGNORECASE)).first
+    - locator resolved to <button mat-button="" appearance="fill" aria-haspopup="menu" aria-expanded="true" _ngcontent-ng-c3814430686="" aria-controls="mat-menu-panel-9" jslog="282717;track:generic_click,impression" mat-ripple-loader-class-name="mat-mdc-button-ripple" class="mdc-button mat-mdc-button-base mat-mdc-menu-trigger corpus-select corpus-menu-trigger mat-mdc-button mat-unthemed">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="cdk-overlay-backdrop cdk-overlay-transparent-backdrop cdk-overlay-backdrop-showing"></div> from <div dir="ltr" popover="manual" class="cdk-overlay-popover cdk-overlay-connected-position-bounding-box">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:41:16,804 [INFO] __main__: Notebook created: id=ecd68f58-6731-467c-a5ea-e07988873b41?addSource=true
+2026-05-03 04:41:16,804 [INFO] __main__: Polling for generation completion (max 900s)...
+2026-05-03 04:41:18,093 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:41:19,548 [INFO] notebooklm.poller: Poll #1 – audio=False video=False summary=False
+2026-05-03 04:41:19,548 [DEBUG] notebooklm.poller: Waiting 60s (897s remaining)
+2026-05-03 04:42:20,630 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:42:22,011 [INFO] notebooklm.poller: Poll #2 – audio=False video=False summary=False
+2026-05-03 04:42:22,011 [DEBUG] notebooklm.poller: Waiting 60s (834s remaining)
+2026-05-03 04:43:23,050 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:43:24,435 [INFO] notebooklm.poller: Poll #3 – audio=False video=False summary=False
+2026-05-03 04:43:24,435 [DEBUG] notebooklm.poller: Waiting 60s (772s remaining)
+2026-05-03 04:44:25,562 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:44:26,977 [INFO] notebooklm.poller: Poll #4 – audio=False video=False summary=False
+2026-05-03 04:44:26,978 [DEBUG] notebooklm.poller: Waiting 60s (709s remaining)
+2026-05-03 04:45:28,032 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:45:29,393 [INFO] notebooklm.poller: Poll #5 – audio=False video=False summary=False
+2026-05-03 04:45:29,394 [DEBUG] notebooklm.poller: Waiting 60s (647s remaining)
+2026-05-03 04:46:30,412 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:46:31,793 [INFO] notebooklm.poller: Poll #6 – audio=False video=False summary=False
+2026-05-03 04:46:31,793 [DEBUG] notebooklm.poller: Waiting 60s (585s remaining)
+2026-05-03 04:47:44,394 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 04:47:44,395 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 04:47:44,587 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 04:47:45,131 [INFO] __main__: news_collected already True – loading cached articles
+2026-05-03 04:47:45,672 [INFO] notion.article_store: Loaded 10 articles from Notion page 354d7670-ba17-81c2-9de4-dc857221f51c
+2026-05-03 04:47:45,673 [INFO] __main__: Loaded 10 cached articles, skipping API calls
+2026-05-03 04:47:45,673 [INFO] __main__: === Step: NotebookLM generation ===
+2026-05-03 04:47:45,673 [WARNING] notebooklm.client: notebooklm-py unavailable (cannot import name 'NotebookLM' from 'notebooklm' (C:\#Project\Server\DailyCatchUp\notebooklm\__init__.py)) – switching to Playwright fallback
+2026-05-03 04:47:46,808 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:47:49,510 [INFO] notebooklm.playwright_fallback: Playwright created notebook id=170d608c-7e1b-407d-96b9-77a8bcf17df5?addSource=true
+2026-05-03 04:47:49,511 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/170d608c-7e1b-407d-96b9-77a8bcf17df5?addSource=true target=https://www.4gamer.net/games/981/G098149/20260501001/
+2026-05-03 04:47:56,713 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/981/G098149/20260501001/
+2026-05-03 04:47:56,713 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/170d608c-7e1b-407d-96b9-77a8bcf17df5 target=https://www.4gamer.net/games/004/G100422/20260502002/
+2026-05-03 04:48:00,820 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/004/G100422/20260502002/
+2026-05-03 04:48:00,820 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/170d608c-7e1b-407d-96b9-77a8bcf17df5 target=https://www.4gamer.net/games/817/G081722/20260502001/
+2026-05-03 04:48:04,911 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/817/G081722/20260502001/
+2026-05-03 04:48:04,911 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/170d608c-7e1b-407d-96b9-77a8bcf17df5 target=https://www.4gamer.net/games/802/G080235/20260501037/
+2026-05-03 04:48:09,009 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/802/G080235/20260501037/
+2026-05-03 04:48:09,010 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/170d608c-7e1b-407d-96b9-77a8bcf17df5 target=https://www.4gamer.net/games/991/G999110/20260501022/
+2026-05-03 04:48:13,148 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/991/G999110/20260501022/
+2026-05-03 04:48:13,148 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/170d608c-7e1b-407d-96b9-77a8bcf17df5 target=https://www.4gamer.net/games/996/G099664/20260501069/
+2026-05-03 04:48:17,246 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/996/G099664/20260501069/
+2026-05-03 04:48:17,246 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/170d608c-7e1b-407d-96b9-77a8bcf17df5 target=https://www.4gamer.net/games/004/G100420/20260501063/
+2026-05-03 04:48:21,382 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/004/G100420/20260501063/
+2026-05-03 04:48:21,382 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/170d608c-7e1b-407d-96b9-77a8bcf17df5 target=https://www.4gamer.net/games/758/G075809/20260502006/
+2026-05-03 04:48:25,509 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/758/G075809/20260502006/
+2026-05-03 04:48:25,509 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/170d608c-7e1b-407d-96b9-77a8bcf17df5 target=https://www.4gamer.net/games/449/G044914/20260501051/
+2026-05-03 04:48:29,638 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://www.4gamer.net/games/449/G044914/20260501051/
+2026-05-03 04:48:29,638 [DEBUG] notebooklm.playwright_fallback: Add source start: page.url=https://notebooklm.google.com/notebook/170d608c-7e1b-407d-96b9-77a8bcf17df5 target=https://news.google.com/rss/articles/CBMiX0FVX3lxTFBCWnlrYzc1bUlsUldOb1JRbWpZSmNSakMzWUdVZkpPbVV0UGVvQTNGOHAxeE8zT0ZyQTRFMy1FeVVEaWZNQ3oxWmRCb0hKMzBMc2RPMjdBd01DYnRyN0dv?oc=5
+2026-05-03 04:48:33,738 [DEBUG] notebooklm.playwright_fallback: Playwright added source: https://news.google.com/rss/articles/CBMiX0FVX3lxTFBCWnlrYzc
+2026-05-03 04:49:05,778 [WARNING] notebooklm.playwright_fallback: Playwright audio trigger failed: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"generate|生成", re.IGNORECASE)).first
+    - locator resolved to <button tabindex="0" mat-button="" type="button" disabled="true" aria-description="音声解説" _ngcontent-ng-c3192500370="" mat-ripple-loader-disabled="" mat-ripple-loader-uninitialized="" mat-ripple-loader-class-name="mat-mdc-button-ripple" aria-labelledby="artifact-labels-238c71cf-aaaa-436d-a6cb-6bf3593af8da" class="mdc-button mat-mdc-button-base artifact-stretched-button mat-mdc-button mat-mdc-button-disabled mat-unthemed" jslog="261224;track:generic_click,impression;0:W1siMTcwZDYwOGMtN2UxYi00MDdkLTk2Yjk…>…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+      - waiting 100ms
+    3 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+      - waiting 500ms
+    56 × waiting for element to be visible, enabled and stable
+       - element is not enabled
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:49:35,791 [WARNING] notebooklm.playwright_fallback: Playwright video trigger failed: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name=re.compile(r"video|動画", re.IGNORECASE)).first
+    - locator resolved to <div tabindex="0" role="button" aria-label="動画解説" _ngcontent-ng-c736808743="" cdk-describedby-host="ng-1" jslog="261214;track:generic_click,impression" aria-describedby="cdk-describedby-message-ng-1-5" class="mat-mdc-tooltip-trigger create-artifact-button-container green mat-label-medium">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="mat-mdc-tooltip-surface mdc-tooltip__surface">ソースに基づいて AI ポッドキャストを生成</div> from <div class="cdk-overlay-container">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="mat-mdc-tooltip-surface mdc-tooltip__surface">ソースに基づいて AI ポッドキャストを生成</div> from <div class="cdk-overlay-container">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    59 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="mat-mdc-tooltip-surface mdc-tooltip__surface">ソースに基づいて AI ポッドキャストを生成</div> from <div class="cdk-overlay-container">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+2026-05-03 04:49:35,919 [INFO] __main__: Notebook created: id=170d608c-7e1b-407d-96b9-77a8bcf17df5?addSource=true
+2026-05-03 04:49:35,919 [INFO] __main__: Polling for generation completion (max 900s)...
+2026-05-03 04:49:36,826 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:49:38,207 [INFO] notebooklm.poller: Poll #1 – audio=False video=False summary=False
+2026-05-03 04:49:38,207 [DEBUG] notebooklm.poller: Waiting 60s (897s remaining)
+2026-05-03 04:50:39,289 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:50:40,662 [INFO] notebooklm.poller: Poll #2 – audio=False video=False summary=False
+2026-05-03 04:50:40,662 [DEBUG] notebooklm.poller: Waiting 60s (835s remaining)
+2026-05-03 04:51:41,741 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:51:43,136 [INFO] notebooklm.poller: Poll #3 – audio=False video=False summary=False
+2026-05-03 04:51:43,136 [DEBUG] notebooklm.poller: Waiting 60s (772s remaining)
+2026-05-03 04:52:44,197 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:52:45,594 [INFO] notebooklm.poller: Poll #4 – audio=False video=False summary=False
+2026-05-03 04:52:45,594 [DEBUG] notebooklm.poller: Waiting 60s (710s remaining)
+2026-05-03 04:53:46,618 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:53:48,008 [INFO] notebooklm.poller: Poll #5 – audio=False video=False summary=False
+2026-05-03 04:53:48,009 [DEBUG] notebooklm.poller: Waiting 60s (647s remaining)
+2026-05-03 04:54:49,036 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:54:50,433 [INFO] notebooklm.poller: Poll #6 – audio=False video=False summary=False
+2026-05-03 04:54:50,433 [DEBUG] notebooklm.poller: Waiting 60s (585s remaining)
+2026-05-03 04:55:51,510 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:55:52,915 [INFO] notebooklm.poller: Poll #7 – audio=False video=False summary=False
+2026-05-03 04:55:52,915 [DEBUG] notebooklm.poller: Waiting 60s (523s remaining)
+2026-05-03 04:56:54,331 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:56:55,351 [INFO] notebooklm.poller: Poll #8 – audio=False video=False summary=False
+2026-05-03 04:56:55,351 [DEBUG] notebooklm.poller: Waiting 60s (460s remaining)
+2026-05-03 04:57:56,407 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:57:57,819 [INFO] notebooklm.poller: Poll #9 – audio=False video=False summary=False
+2026-05-03 04:57:57,820 [DEBUG] notebooklm.poller: Waiting 60s (398s remaining)
+2026-05-03 04:58:58,861 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 04:58:59,857 [INFO] notebooklm.poller: Poll #10 – audio=False video=False summary=False
+2026-05-03 04:58:59,858 [DEBUG] notebooklm.poller: Waiting 60s (336s remaining)
+2026-05-03 05:00:00,892 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:00:02,289 [INFO] notebooklm.poller: Poll #11 – audio=False video=False summary=False
+2026-05-03 05:00:02,289 [DEBUG] notebooklm.poller: Waiting 60s (273s remaining)
+2026-05-03 05:01:03,365 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:01:04,773 [INFO] notebooklm.poller: Poll #12 – audio=False video=False summary=False
+2026-05-03 05:01:04,773 [DEBUG] notebooklm.poller: Waiting 60s (211s remaining)
+2026-05-03 05:02:05,816 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:02:07,268 [INFO] notebooklm.poller: Poll #13 – audio=False video=False summary=False
+2026-05-03 05:02:07,268 [DEBUG] notebooklm.poller: Waiting 60s (148s remaining)
+2026-05-03 05:03:08,321 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:03:09,706 [INFO] notebooklm.poller: Poll #14 – audio=False video=False summary=False
+2026-05-03 05:03:09,706 [DEBUG] notebooklm.poller: Waiting 60s (86s remaining)
+2026-05-03 05:04:10,738 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
+2026-05-03 05:04:12,166 [INFO] notebooklm.poller: Poll #15 – audio=False video=False summary=False
+2026-05-03 05:04:12,166 [DEBUG] notebooklm.poller: Waiting 60s (23s remaining)

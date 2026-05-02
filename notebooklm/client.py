@@ -60,42 +60,86 @@ class NotebookLMClient:
     def create_notebook_with_articles(
         self, title: str, articles: List[Article]
     ) -> GenerationResult:
+        result = self.create_notebook(title)
+        self.add_sources(result.notebook_id, articles)
+        self.trigger_generation(result.notebook_id)
+        return result
+
+    def create_notebook(self, title: str) -> GenerationResult:
         client = self._get_client()
         try:
             if self._use_playwright:
-                return client.create_notebook_with_articles(title, articles)
-            return self._create_via_library(client, title, articles)
+                return client.create_notebook(title)
+            notebook = client.create_notebook(title=title)
+            notebook_id: str = str(notebook.id)
+            log.info("Created notebook id=%s", notebook_id)
+            return GenerationResult(notebook_id=notebook_id)
         except Exception as exc:
-            log.error("NotebookLM creation failed: %s", exc)
+            log.error("NotebookLM create failed: %s", exc)
             if not self._use_playwright:
-                log.info("Retrying with Playwright fallback")
+                log.info("Retrying notebook create with Playwright fallback")
                 self._client = None
                 self._use_playwright = True
-                return self.create_notebook_with_articles(title, articles)
+                return self.create_notebook(title)
             raise
 
-    def _create_via_library(self, client, title: str, articles: List[Article]) -> GenerationResult:
-        notebook = client.create_notebook(title=title)
-        notebook_id: str = str(notebook.id)
-        log.info("Created notebook id=%s", notebook_id)
-
-        for article in articles:
-            try:
-                notebook.add_source(url=article.url, title=article.title)
-                log.debug("Added source: %s", article.title[:60])
-            except Exception as exc:
-                log.warning("Could not add source [%s]: %s", article.url, exc)
-
-        log.info("Triggering Audio Overview generation")
-        notebook.generate_audio_overview()
-
-        log.info("Triggering Video Overview generation")
+    def add_sources(self, notebook_id: str, articles: List[Article]) -> int:
+        client = self._get_client()
         try:
-            notebook.generate_video_overview()
-        except Exception as exc:
-            log.warning("Video generation not supported or failed: %s", exc)
+            if self._use_playwright:
+                return client.add_sources(notebook_id, articles)
 
-        return GenerationResult(notebook_id=notebook_id)
+            notebook = client.get_notebook(notebook_id)
+            added = 0
+            for article in articles:
+                try:
+                    notebook.add_source(url=article.url, title=article.title)
+                    added += 1
+                    log.debug("Added source: %s", article.title[:60])
+                except Exception as exc:
+                    log.warning("Could not add source [%s]: %s", article.url, exc)
+            return added
+        except Exception as exc:
+            log.error("NotebookLM add_sources failed: %s", exc)
+            if not self._use_playwright:
+                log.info("Retrying add_sources with Playwright fallback")
+                self._client = None
+                self._use_playwright = True
+                return self.add_sources(notebook_id, articles)
+            raise
+
+    def trigger_generation(
+        self,
+        notebook_id: str,
+        *,
+        audio: bool = True,
+        video: bool = True,
+    ) -> GenerationResult:
+        client = self._get_client()
+        try:
+            if self._use_playwright:
+                return client.trigger_generation(notebook_id, audio=audio, video=video)
+
+            notebook = client.get_notebook(notebook_id)
+            if audio:
+                log.info("Triggering Audio Overview generation")
+                notebook.generate_audio_overview()
+            if video:
+                log.info("Triggering Video Overview generation")
+                try:
+                    notebook.generate_video_overview()
+                except Exception as exc:
+                    log.warning("Video generation not supported or failed: %s", exc)
+
+            return GenerationResult(notebook_id=notebook_id)
+        except Exception as exc:
+            log.error("NotebookLM trigger_generation failed: %s", exc)
+            if not self._use_playwright:
+                log.info("Retrying trigger_generation with Playwright fallback")
+                self._client = None
+                self._use_playwright = True
+                return self.trigger_generation(notebook_id, audio=audio, video=video)
+            raise
 
     def get_status(self, notebook_id: str) -> GenerationResult:
         client = self._get_client()

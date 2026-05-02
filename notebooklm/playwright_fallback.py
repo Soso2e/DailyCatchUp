@@ -7,6 +7,7 @@ the initial manual login; subsequent pipeline runs reuse that profile.
 
 from __future__ import annotations
 
+import re
 import time
 from pathlib import Path
 from typing import List
@@ -66,7 +67,7 @@ class PlaywrightClient:
     def _check_logged_in(self) -> None:
         page = self._page
         page.goto(NOTEBOOKLM_URL)
-        page.wait_for_load_state("networkidle", timeout=30_000)
+        page.wait_for_selector("body", timeout=30_000)
 
         if "notebooklm.google.com" in page.url and "accounts.google.com" not in page.url:
             log.info("Chrome profile session valid")
@@ -97,17 +98,120 @@ class PlaywrightClient:
     # Notebook operations
     # ------------------------------------------------------------------
 
+    def _wait_for_workspace_entry(self) -> None:
+        """Wait until the NotebookLM landing UI is interactive."""
+        page = self._page
+        page.wait_for_selector("body", timeout=30_000)
+        page.wait_for_selector(
+            "button, [role='button'], [role='main']",
+            timeout=30_000,
+        )
+
+    def _wait_for_notebook_editor(self) -> None:
+        """NotebookLM is an SPA, so wait through each transition stage."""
+        page = self._page
+
+        try:
+            page.wait_for_url("**/notebook/**", timeout=30_000)
+        except Exception:
+            log.debug("Notebook editor URL not reached yet; current url=%s", page.url)
+
+        page.wait_for_selector(
+            "input, textarea, dialog, [role='dialog'], [role='main']",
+            timeout=30_000,
+        )
+
+        textarea = page.locator("textarea")
+        if textarea.count():
+            textarea.first.wait_for(timeout=10_000)
+            return
+
+        page.wait_for_selector("textarea", timeout=30_000)
+
+    def _find_url_input(self):
+        page = self._page
+        selectors = [
+            'input[type="url"]',
+            'input[placeholder*="url" i]',
+            'input[placeholder*="website" i]',
+            'input[aria-label*="url" i]',
+            'input[aria-label*="website" i]',
+            "textarea",
+            'input[type="text"]',
+            "[contenteditable='true']",
+        ]
+
+        for selector in selectors:
+            locator = page.locator(selector)
+            if locator.count():
+                return locator.first
+
+        textbox = page.get_by_role("textbox")
+        if textbox.count():
+            return textbox.first
+
+        return None
+
+    def _dismiss_overlay(self) -> None:
+        page = self._page
+        page.keyboard.press("Escape")
+        try:
+            page.wait_for_selector(".cdk-overlay-backdrop", state="hidden", timeout=3_000)
+        except Exception:
+            backdrop = page.locator(".cdk-overlay-backdrop")
+            if backdrop.count():
+                try:
+                    backdrop.last.click(force=True)
+                    page.wait_for_timeout(500)
+                except Exception:
+                    pass
+
     def create_notebook_with_articles(
         self, title: str, articles: List[Article]
     ) -> GenerationResult:
+        result = self.create_notebook(title)
+        self.add_sources(result.notebook_id, articles)
+        self.trigger_generation(result.notebook_id)
+        return result
+
+    def create_notebook(self, title: str) -> GenerationResult:
         self._launch()
         try:
             self._check_logged_in()
             notebook_id = self._create_notebook(title)
+            return GenerationResult(notebook_id=notebook_id)
+        finally:
+            self._close()
+
+    def add_sources(self, notebook_id: str, articles: List[Article]) -> int:
+        self._launch()
+        try:
+            self._check_logged_in()
+            self._open_notebook(notebook_id)
+            added = 0
             for article in articles:
-                self._add_source_url(article.url)
-            self._trigger_audio()
-            self._trigger_video()
+                if self._add_source_url(article.url):
+                    added += 1
+            log.info("Playwright added %d/%d sources", added, len(articles))
+            return added
+        finally:
+            self._close()
+
+    def trigger_generation(
+        self,
+        notebook_id: str,
+        *,
+        audio: bool = True,
+        video: bool = True,
+    ) -> GenerationResult:
+        self._launch()
+        try:
+            self._check_logged_in()
+            self._open_notebook(notebook_id)
+            if audio:
+                self._trigger_audio()
+            if video:
+                self._trigger_video()
             return GenerationResult(notebook_id=notebook_id)
         finally:
             self._close()
@@ -115,75 +219,120 @@ class PlaywrightClient:
     def _create_notebook(self, title: str) -> str:
         page = self._page
         page.goto(NOTEBOOKLM_URL)
-        page.wait_for_load_state("networkidle", timeout=30_000)
+        self._wait_for_workspace_entry()
 
-        new_btn = page.locator("button:has-text('New notebook'), button:has-text('新規ノートブック')")
+        new_btn = page.get_by_role(
+            "button", name=re.compile(r"新規|create|notebook", re.IGNORECASE)
+        )
+        new_btn.first.wait_for(timeout=15_000)
         new_btn.first.click()
         page.wait_for_timeout(2000)
 
-        title_input = page.locator('input[placeholder*="title"], input[placeholder*="タイトル"]')
+        title_input = page.locator(
+            'input[placeholder*="title" i], input[placeholder*="タイトル"],'
+            ' input[aria-label*="title" i], input[aria-label*="タイトル"]'
+        )
         if title_input.count():
             title_input.first.fill(title)
             page.keyboard.press("Enter")
             page.wait_for_timeout(1000)
 
-        page.wait_for_load_state("networkidle", timeout=30_000)
+        self._wait_for_notebook_editor()
         url = page.url
         notebook_id = url.split("/")[-1] if "/" in url else f"pw_{int(time.time())}"
         log.info("Playwright created notebook id=%s", notebook_id)
         return notebook_id
 
-    def _add_source_url(self, url: str) -> None:
+    def _open_notebook(self, notebook_id: str) -> None:
+        page = self._page
+        page.goto(f"{NOTEBOOKLM_URL}/notebook/{notebook_id}")
+        self._wait_for_notebook_editor()
+
+    def _add_source_url(self, url: str) -> bool:
         page = self._page
         try:
-            add_btn = page.locator("button:has-text('Add source'), button:has-text('ソースを追加')")
-            add_btn.first.click()
-            page.wait_for_timeout(1000)
+            log.debug("Add source start: page.url=%s target=%s", page.url, url)
 
-            url_tab = page.locator("button:has-text('Website'), a:has-text('Website')")
-            if url_tab.count():
-                url_tab.first.click()
-                page.wait_for_timeout(500)
+            add_btn = page.get_by_role(
+                "button", name=re.compile(r"ソース|add.?source|追加", re.IGNORECASE)
+            )
+            if "addSource=true" not in page.url and add_btn.count():
+                add_btn.first.click()
+                page.wait_for_timeout(1000)
 
-            url_input = page.locator('input[placeholder*="URL"], input[type="url"]')
-            url_input.first.fill(url)
-            page.keyboard.press("Enter")
+            for role in ("button", "tab"):
+                url_tab = page.get_by_role(
+                    role, name=re.compile(r"website|url|link|ウェブ", re.IGNORECASE)
+                )
+                if url_tab.count():
+                    url_tab.first.click()
+                    page.wait_for_timeout(500)
+                    break
+
+            self._dismiss_overlay()
+            page.wait_for_selector(
+                "input, textarea, [contenteditable='true'], [role='textbox']",
+                timeout=10_000,
+            )
+            url_input = self._find_url_input()
+            if url_input is None:
+                raise RuntimeError(f"URL input not found on page {page.url}")
+
+            url_input.wait_for(timeout=5_000)
+            self._dismiss_overlay()
+            url_input.focus()
+            try:
+                url_input.fill("")
+            except Exception:
+                pass
+            url_input.fill(url)
+            url_input.press("Enter")
             page.wait_for_timeout(3000)
             log.debug("Playwright added source: %s", url[:60])
+            return True
         except Exception as exc:
-            log.warning("Playwright add_source failed for %s: %s", url, exc)
+            log.warning("Playwright add_source failed for %s at %s: %s", url, page.url, exc)
+            return False
 
-    def _trigger_audio(self) -> None:
+    def _trigger_audio(self) -> bool:
         page = self._page
         try:
-            audio_btn = page.locator(
-                "button:has-text('Audio Overview'), button:has-text('音声概要')"
+            audio_btn = page.get_by_role(
+                "button", name=re.compile(r"audio.?overview|音声概要|音声", re.IGNORECASE)
             )
             if audio_btn.count():
                 audio_btn.first.click()
                 page.wait_for_timeout(2000)
-                generate_btn = page.locator("button:has-text('Generate'), button:has-text('生成')")
+                generate_btn = page.get_by_role(
+                    "button", name=re.compile(r"generate|生成", re.IGNORECASE)
+                )
                 if generate_btn.count():
                     generate_btn.first.click()
                 log.info("Playwright triggered audio generation")
+                return True
         except Exception as exc:
             log.warning("Playwright audio trigger failed: %s", exc)
+        return False
 
-    def _trigger_video(self) -> None:
+    def _trigger_video(self) -> bool:
         page = self._page
         try:
-            video_btn = page.locator(
-                "button:has-text('Video'), button:has-text('動画')"
+            video_btn = page.get_by_role(
+                "button", name=re.compile(r"video|動画", re.IGNORECASE)
             )
             if video_btn.count():
                 video_btn.first.click()
                 page.wait_for_timeout(2000)
-                generate_btn = page.locator("button:has-text('Generate'), button:has-text('生成')")
+                generate_btn = page.get_by_role(
+                    "button", name=re.compile(r"generate|生成", re.IGNORECASE)
+                )
                 if generate_btn.count():
                     generate_btn.first.click()
                 log.info("Playwright triggered video generation")
+                return True
         except Exception as exc:
             log.warning("Playwright video trigger failed: %s", exc)
+        return False
 
     def get_status(self, notebook_id: str) -> GenerationResult:
         self._launch()
@@ -191,7 +340,7 @@ class PlaywrightClient:
             self._check_logged_in()
             page = self._page
             page.goto(f"{NOTEBOOKLM_URL}/notebook/{notebook_id}")
-            page.wait_for_load_state("networkidle", timeout=30_000)
+            self._wait_for_notebook_editor()
 
             result = GenerationResult(notebook_id=notebook_id)
 

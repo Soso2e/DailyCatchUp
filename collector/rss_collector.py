@@ -22,12 +22,16 @@ RSS_FEEDS: dict[str, tuple[str, str]] = {
         "ja",
     ),
     "google_news_en_ai": (
-        "https://news.google.com/rss/search?q=artificial+intelligence+generative&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=(AI+OR+%22artificial+intelligence%22+OR+%22machine+learning%22+OR+LLM+OR+%22generative+AI%22)&hl=en-US&gl=US&ceid=US:en",
         "en",
     ),
     "google_news_en_game": (
-        "https://news.google.com/rss/search?q=gaming+industry+release&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=(gaming+industry+OR+game+release)+AI&hl=en-US&gl=US&ceid=US:en",
         "en",
+    ),
+    "google_news_ja_ai_global": (
+        "https://news.google.com/rss/search?q=(生成AI+OR+人工知能+OR+機械学習+OR+LLM)&hl=ja&gl=JP&ceid=JP:ja",
+        "ja",
     ),
     "4gamer": ("https://www.4gamer.net/rss/index.xml", "ja"),
     "famitsu": ("https://www.famitsu.com/rss/gamers/", "ja"),

@@ -1,2 +1,3 @@
-2026/05/03-03:44:51.081 1657c Creating DB C:\#Project\Server\DailyCatchUp\.chrome_profile\Default\Sync Data\LevelDB since it was missing.
-2026/05/03-03:44:51.098 1657c Reusing MANIFEST C:\#Project\Server\DailyCatchUp\.chrome_profile\Default\Sync Data\LevelDB/MANIFEST-000001
+2026/05/03-05:03:07.614 d8ac Reusing MANIFEST C:\#Project\Server\DailyCatchUp\.chrome_profile\Default\Sync Data\LevelDB/MANIFEST-000001
+2026/05/03-05:03:07.616 d8ac Recovering log #3
+2026/05/03-05:03:07.616 d8ac Reusing old log C:\#Project\Server\DailyCatchUp\.chrome_profile\Default\Sync Data\LevelDB/000003.log 

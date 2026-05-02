@@ -1,2 +1,3 @@
-2026/05/03-03:44:51.205 1657c Creating DB C:\#Project\Server\DailyCatchUp\.chrome_profile\Default\shared_proto_db\metadata since it was missing.
-2026/05/03-03:44:51.223 1657c Reusing MANIFEST C:\#Project\Server\DailyCatchUp\.chrome_profile\Default\shared_proto_db\metadata/MANIFEST-000001
+2026/05/03-05:03:07.695 13ea8 Reusing MANIFEST C:\#Project\Server\DailyCatchUp\.chrome_profile\Default\shared_proto_db\metadata/MANIFEST-000001
+2026/05/03-05:03:07.696 13ea8 Recovering log #3
+2026/05/03-05:03:07.696 13ea8 Reusing old log C:\#Project\Server\DailyCatchUp\.chrome_profile\Default\shared_proto_db\metadata/000003.log 

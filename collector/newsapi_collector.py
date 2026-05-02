@@ -1,4 +1,4 @@
-"""News API collector for English AI/gaming news (TechCrunch, The Verge, VentureBeat, etc.)."""
+"""News API collector for AI-focused Japanese/English news."""
 
 from datetime import datetime, timezone, timedelta
 from typing import List
@@ -14,11 +14,9 @@ log = get_logger(__name__)
 NEWSAPI_ENDPOINT = "https://newsapi.org/v2/everything"
 
 SEARCH_QUERIES = [
-    "artificial intelligence",
-    "generative AI LLM",
-    "gaming industry",
-    "video game release",
-    "large language model",
+    {"query": '("AI" OR "artificial intelligence" OR "machine learning" OR "LLM" OR "generative AI") AND (game OR gaming OR developer OR release OR model)', "language": "en"},
+    {"query": '"OpenAI" OR "Anthropic" OR "Google AI" OR "Gemini" OR "Claude"', "language": "en"},
+    {"query": '"生成AI" OR "人工知能" OR "機械学習" OR "LLM"', "language": None},
 ]
 
 PREFERRED_SOURCES = [
@@ -43,18 +41,22 @@ def collect_newsapi(max_age_hours: int = 24) -> List[Article]:
         datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
     ).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    for query in SEARCH_QUERIES:
+    for search in SEARCH_QUERIES:
+        query = search["query"]
         try:
+            params = {
+                "q": query,
+                "from": from_date,
+                "sortBy": "publishedAt",
+                "apiKey": config.NEWS_API_KEY,
+                "pageSize": 20,
+            }
+            if search.get("language"):
+                params["language"] = search["language"]
+
             resp = httpx.get(
                 NEWSAPI_ENDPOINT,
-                params={
-                    "q": query,
-                    "from": from_date,
-                    "sortBy": "publishedAt",
-                    "language": "en",
-                    "apiKey": config.NEWS_API_KEY,
-                    "pageSize": 15,
-                },
+                params=params,
                 timeout=30,
             )
             resp.raise_for_status()
@@ -83,7 +85,7 @@ def collect_newsapi(max_age_hours: int = 24) -> List[Article]:
                         url=url,
                         published_at=pub_dt,
                         source=source_name,
-                        language="en",
+                        language=search.get("language") or "mixed",
                         summary=item.get("description") or "",
                     )
                 )
