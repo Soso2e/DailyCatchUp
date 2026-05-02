@@ -37,7 +37,8 @@ class PlaywrightClient:
     def _launch(self) -> None:
         from playwright.sync_api import sync_playwright  # type: ignore
 
-        self._pw = sync_playwright().__enter__()
+        self._pw_cm = sync_playwright()
+        self._pw = self._pw_cm.__enter__()
         self._browser = self._pw.chromium.launch(headless=True)
         context_kwargs: dict = {"viewport": {"width": 1280, "height": 900}}
 
@@ -56,7 +57,7 @@ class PlaywrightClient:
         if self._browser:
             self._save_session()
             self._browser.close()
-            self._pw.__exit__(None, None, None)
+            self._pw_cm.__exit__(None, None, None)
 
     # ------------------------------------------------------------------
     # Google login
@@ -75,7 +76,7 @@ class PlaywrightClient:
         page.goto(GOOGLE_LOGIN_URL)
         page.fill('input[type="email"]', config.GOOGLE_EMAIL)
         page.click("#identifierNext")
-        page.wait_for_timeout(2000)
+        page.wait_for_selector('input[type="password"]', state="visible", timeout=15_000)
         page.fill('input[type="password"]', config.GOOGLE_PASSWORD)
         page.click("#passwordNext")
         page.wait_for_load_state("networkidle", timeout=30_000)

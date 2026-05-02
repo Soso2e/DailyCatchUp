@@ -6,7 +6,8 @@ import json
 from dataclasses import dataclass
 from typing import List
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 import config
 from collector.rss_collector import Article
@@ -50,17 +51,17 @@ def generate_metadata(articles: List[Article], date_str: str) -> VideoMetadata:
         for i, a in enumerate(articles)
     )
 
-    genai.configure(api_key=config.GEMINI_API_KEY)
-    model = genai.GenerativeModel(
-        model_name=config.GEMINI_MODEL,
-        system_instruction=SYSTEM_PROMPT,
-    )
+    client = genai.Client(api_key=config.GEMINI_API_KEY)
 
     log.info("Calling Gemini API for metadata generation (model=%s)", config.GEMINI_MODEL)
 
-    response = model.generate_content(
-        USER_PROMPT_TEMPLATE.format(date=date_str, articles=article_lines),
-        generation_config=genai.types.GenerationConfig(max_output_tokens=1024),
+    response = client.models.generate_content(
+        model=config.GEMINI_MODEL,
+        contents=USER_PROMPT_TEMPLATE.format(date=date_str, articles=article_lines),
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            max_output_tokens=1024,
+        ),
     )
 
     raw = response.text.strip()
