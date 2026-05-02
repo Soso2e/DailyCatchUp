@@ -1,4 +1,4 @@
-"""Generate YouTube metadata (title, description, tags, thumbnail text) using Claude API."""
+"""Generate YouTube metadata (title, description, tags, thumbnail text) using Gemini API."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass
 from typing import List
 
-import anthropic
+import google.generativeai as genai
 
 import config
 from collector.rss_collector import Article
@@ -50,27 +50,21 @@ def generate_metadata(articles: List[Article], date_str: str) -> VideoMetadata:
         for i, a in enumerate(articles)
     )
 
-    client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
-
-    log.info("Calling Claude API for metadata generation (model=%s)", config.CLAUDE_MODEL)
-
-    message = client.messages.create(
-        model=config.CLAUDE_MODEL,
-        max_tokens=1024,
-        system=SYSTEM_PROMPT,
-        messages=[
-            {
-                "role": "user",
-                "content": USER_PROMPT_TEMPLATE.format(
-                    date=date_str,
-                    articles=article_lines,
-                ),
-            }
-        ],
+    genai.configure(api_key=config.GEMINI_API_KEY)
+    model = genai.GenerativeModel(
+        model_name=config.GEMINI_MODEL,
+        system_instruction=SYSTEM_PROMPT,
     )
 
-    raw = message.content[0].text.strip()
-    log.debug("Claude response: %s", raw[:200])
+    log.info("Calling Gemini API for metadata generation (model=%s)", config.GEMINI_MODEL)
+
+    response = model.generate_content(
+        USER_PROMPT_TEMPLATE.format(date=date_str, articles=article_lines),
+        generation_config=genai.types.GenerationConfig(max_output_tokens=1024),
+    )
+
+    raw = response.text.strip()
+    log.debug("Gemini response: %s", raw[:200])
 
     try:
         data = json.loads(raw)
@@ -82,7 +76,7 @@ def generate_metadata(articles: List[Article], date_str: str) -> VideoMetadata:
         if match:
             data = json.loads(match.group())
         else:
-            log.error("Could not parse Claude response as JSON: %s", raw)
+            log.error("Could not parse Gemini response as JSON: %s", raw)
             data = _fallback_metadata(articles, date_str)
 
     return VideoMetadata(
