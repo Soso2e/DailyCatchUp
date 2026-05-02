@@ -1,12 +1,12 @@
 """Playwright-based browser automation fallback for NotebookLM.
 
-Used when notebooklm-py fails or Google session expires.  Sends a Discord
-notification asking for manual re-auth if login fails.
+Uses a persistent Chrome profile (userDataDir) so Google does not flag the
+browser as automated.  Run `python scripts/save_session.py` once to perform
+the initial manual login; subsequent pipeline runs reuse that profile.
 """
 
 from __future__ import annotations
 
-import json
 import time
 from pathlib import Path
 from typing import List
@@ -19,16 +19,15 @@ from notebooklm.client import GenerationResult
 log = get_logger(__name__)
 
 NOTEBOOKLM_URL = "https://notebooklm.google.com"
-GOOGLE_LOGIN_URL = "https://accounts.google.com/signin"
 
 
 class PlaywrightClient:
-    """Controls NotebookLM via a headless Chromium browser."""
+    """Controls NotebookLM via a persistent Chrome profile."""
 
     def __init__(self) -> None:
-        self._browser = None
+        self._context = None
         self._page = None
-        self._session_file = Path(config.NOTEBOOKLM_SESSION_FILE)
+        self._profile_dir = Path(config.CHROME_PROFILE_DIR)
 
     # ------------------------------------------------------------------
     # Browser lifecycle
@@ -37,68 +36,58 @@ class PlaywrightClient:
     def _launch(self) -> None:
         from playwright.sync_api import sync_playwright  # type: ignore
 
+        if not self._profile_dir.exists():
+            msg = (
+                f"Chrome profile not found at {self._profile_dir}. "
+                "Run `python scripts/save_session.py` to log in and create it."
+            )
+            raise RuntimeError(msg)
+
         self._pw_cm = sync_playwright()
         self._pw = self._pw_cm.__enter__()
-        self._browser = self._pw.chromium.launch(headless=True)
-        context_kwargs: dict = {"viewport": {"width": 1280, "height": 900}}
-
-        if self._session_file.exists():
-            context_kwargs["storage_state"] = str(self._session_file)
-
-        self._context = self._browser.new_context(**context_kwargs)
-        self._page = self._context.new_page()
-
-    def _save_session(self) -> None:
-        if self._context:
-            self._context.storage_state(path=str(self._session_file))
-            log.debug("Session saved to %s", self._session_file)
+        self._context = self._pw.chromium.launch_persistent_context(
+            user_data_dir=str(self._profile_dir),
+            channel="chrome",
+            headless=True,
+            args=["--disable-blink-features=AutomationControlled"],
+            ignore_default_args=["--enable-automation"],
+        )
+        self._page = self._context.pages[0] if self._context.pages else self._context.new_page()
 
     def _close(self) -> None:
-        if self._browser:
-            self._save_session()
-            self._browser.close()
+        if self._context:
+            self._context.close()
             self._pw_cm.__exit__(None, None, None)
 
     # ------------------------------------------------------------------
-    # Google login
+    # Google session check
     # ------------------------------------------------------------------
 
-    def _login(self) -> None:
+    def _check_logged_in(self) -> None:
         page = self._page
         page.goto(NOTEBOOKLM_URL)
         page.wait_for_load_state("networkidle", timeout=30_000)
 
         if "notebooklm.google.com" in page.url and "accounts.google.com" not in page.url:
-            log.info("Already logged in via stored session")
+            log.info("Chrome profile session valid")
             return
 
-        log.info("Logging in to Google account")
-        page.goto(GOOGLE_LOGIN_URL)
-        page.fill('input[type="email"]', config.GOOGLE_EMAIL)
-        page.click("#identifierNext")
-        page.wait_for_selector('input[type="password"]', state="visible", timeout=15_000)
-        page.fill('input[type="password"]', config.GOOGLE_PASSWORD)
-        page.click("#passwordNext")
-        page.wait_for_load_state("networkidle", timeout=30_000)
-
-        if "accounts.google.com" in page.url:
-            msg = "Google login failed – manual re-authentication required"
-            log.error(msg)
-            self._notify_auth_required()
-            raise RuntimeError(msg)
-
-        self._save_session()
-        log.info("Google login successful")
+        msg = (
+            "Google session expired. "
+            "Run `python scripts/save_session.py` to renew the session."
+        )
+        log.error(msg)
+        self._notify_auth_required()
+        raise RuntimeError(msg)
 
     def _notify_auth_required(self) -> None:
-        """Send a Discord webhook alert asking for manual re-auth."""
         try:
             import httpx
 
             if config.DISCORD_WEBHOOK_URL:
                 httpx.post(
                     config.DISCORD_WEBHOOK_URL,
-                    json={"content": "⚠️ **DailyCatchUp** Google session expired. Manual re-authentication required."},
+                    json={"content": "⚠️ **DailyCatchUp** Google session expired. Run `python scripts/save_session.py` to renew."},
                     timeout=10,
                 )
         except Exception:
@@ -113,7 +102,7 @@ class PlaywrightClient:
     ) -> GenerationResult:
         self._launch()
         try:
-            self._login()
+            self._check_logged_in()
             notebook_id = self._create_notebook(title)
             for article in articles:
                 self._add_source_url(article.url)
@@ -199,30 +188,26 @@ class PlaywrightClient:
     def get_status(self, notebook_id: str) -> GenerationResult:
         self._launch()
         try:
-            self._login()
+            self._check_logged_in()
             page = self._page
             page.goto(f"{NOTEBOOKLM_URL}/notebook/{notebook_id}")
             page.wait_for_load_state("networkidle", timeout=30_000)
 
             result = GenerationResult(notebook_id=notebook_id)
 
-            # Check for audio ready
             audio_download = page.locator(
                 "a[href*='.mp3'], button:has-text('Download audio')"
             )
             if audio_download.count():
                 result.audio_ready = True
-                href = audio_download.first.get_attribute("href")
-                result.audio_url = href
+                result.audio_url = audio_download.first.get_attribute("href")
 
-            # Check for video ready
             video_download = page.locator(
                 "a[href*='.mp4'], button:has-text('Download video')"
             )
             if video_download.count():
                 result.video_ready = True
-                href = video_download.first.get_attribute("href")
-                result.video_url = href
+                result.video_url = video_download.first.get_attribute("href")
 
             return result
         finally:

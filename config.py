@@ -16,6 +16,9 @@ GOOGLE_PASSWORD = os.getenv("GOOGLE_PASSWORD", "")
 NOTEBOOKLM_SESSION_FILE = os.getenv(
     "NOTEBOOKLM_SESSION_FILE", str(BASE_DIR / ".notebooklm_session.json")
 )
+CHROME_PROFILE_DIR = os.getenv(
+    "CHROME_PROFILE_DIR", str(BASE_DIR / ".chrome_profile")
+)
 
 # Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
