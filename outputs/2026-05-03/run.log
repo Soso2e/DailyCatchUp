@@ -935,3 +935,70 @@ Call log:
 2026-05-03 05:04:10,738 [INFO] notebooklm.playwright_fallback: Chrome profile session valid
 2026-05-03 05:04:12,166 [INFO] notebooklm.poller: Poll #15 – audio=False video=False summary=False
 2026-05-03 05:04:12,166 [DEBUG] notebooklm.poller: Waiting 60s (23s remaining)
+2026-05-03 05:05:12,167 [WARNING] notebooklm.poller: Polling timed out after 900s – returning partial result (audio=False video=False)
+2026-05-03 05:05:12,847 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:05:12,848 [INFO] __main__: === Step: download assets ===
+2026-05-03 05:05:12,848 [WARNING] downloader.asset_downloader: Audio not ready – skipping download
+2026-05-03 05:05:12,848 [WARNING] downloader.asset_downloader: Video not ready – skipping download
+2026-05-03 05:05:12,848 [INFO] __main__: Assets: audio=None video=None summary=None
+2026-05-03 05:05:13,388 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:05:13,388 [INFO] __main__: === Step: generate metadata (Claude) ===
+2026-05-03 05:05:13,952 [INFO] meta.meta_generator: Calling Gemini API for metadata generation (model=gemini-2.0-flash)
+2026-05-03 05:05:14,175 [ERROR] __main__: Morning pipeline error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'API key not valid. Please pass a valid API key.', 'status': 'INVALID_ARGUMENT', 'details': [{'@type': 'type.googleapis.com/google.rpc.ErrorInfo', 'reason': 'API_KEY_INVALID', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.LocalizedMessage', 'locale': 'en-US', 'message': 'API key not valid. Please pass a valid API key.'}]}}
+Traceback (most recent call last):
+  File "C:\#Project\Server\DailyCatchUp\scheduler\runner.py", line 215, in run_morning_pipeline
+    notebook_id=notebook_id,
+       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\#Project\Server\DailyCatchUp\scheduler\runner.py", line 104, in step_meta
+    "thumbnail_headline": metadata.thumbnail_headline,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\#Project\Server\DailyCatchUp\meta\meta_generator.py", line 58, in generate_metadata
+    response = client.models.generate_content(
+        model=config.GEMINI_MODEL,
+    ...<4 lines>...
+        ),
+    )
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\google\genai\models.py", line 6329, in generate_content
+    response = self._generate_content(
+        model=model, contents=contents, config=parsed_config
+    )
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\google\genai\models.py", line 4767, in _generate_content
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\google\genai\_api_client.py", line 1579, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\google\genai\_api_client.py", line 1372, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\google\genai\_api_client.py", line 1349, in _request_once
+    errors.APIError.raise_for_response(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\google\genai\errors.py", line 155, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\So2e\AppData\Local\Programs\Python\Python313\Lib\site-packages\google\genai\errors.py", line 184, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'API key not valid. Please pass a valid API key.', 'status': 'INVALID_ARGUMENT', 'details': [{'@type': 'type.googleapis.com/google.rpc.ErrorInfo', 'reason': 'API_KEY_INVALID', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.LocalizedMessage', 'locale': 'en-US', 'message': 'API key not valid. Please pass a valid API key.'}]}}
+
+2026-05-03 05:05:14,760 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:05:15,391 [INFO] __main__: ====== Evening pipeline start (2026-05-03) ======
+2026-05-03 05:05:15,599 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 05:05:16,079 [ERROR] __main__: No metadata available – cannot proceed with evening pipeline
