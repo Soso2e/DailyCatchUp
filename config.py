@@ -45,6 +45,7 @@ NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID", "")
 # Pipeline settings
 MAX_ARTICLES = int(os.getenv("MAX_ARTICLES", "5"))
 MIN_ARTICLES = int(os.getenv("MIN_ARTICLES", "2"))
+MIN_SOURCES_TO_GENERATE = int(os.getenv("MIN_SOURCES_TO_GENERATE", "3"))
 NEWS_MAX_AGE_HOURS = int(os.getenv("NEWS_MAX_AGE_HOURS", "24"))
 NOTEBOOKLM_POLL_INTERVAL = int(os.getenv("NOTEBOOKLM_POLL_INTERVAL", "60"))
 NOTEBOOKLM_MAX_WAIT = int(os.getenv("NOTEBOOKLM_MAX_WAIT", "900"))  # 15 min

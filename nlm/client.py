@@ -55,6 +55,13 @@ class NotebookLMClient:
                 added = 0
                 for article in articles:
                     resolved = resolve_url(article.url)
+                    if "news.google.com/rss/articles/" in resolved:
+                        log.info(
+                            "Skipping unresolved Google News source [%s]: %s",
+                            article.source,
+                            article.url[:120],
+                        )
+                        continue
                     try:
                         await c.sources.add_url(
                             notebook_id, resolved, wait=True, wait_timeout=120.0
@@ -87,15 +94,27 @@ class NotebookLMClient:
                 if audio:
                     try:
                         status = await c.artifacts.generate_audio(notebook_id, language="ja")
-                        result.audio_task_id = status.task_id
-                        log.info("Audio generation started task_id=%s", status.task_id)
+                        task_id = (status.task_id or "").strip() or None
+                        result.audio_task_id = task_id
+                        if task_id:
+                            log.info("Audio generation started task_id=%s", task_id)
+                        else:
+                            log.warning(
+                                "Audio generation returned no task_id - skipping audio wait"
+                            )
                     except Exception as exc:
                         log.warning("Audio generation trigger failed: %s", exc)
                 if video:
                     try:
                         status = await c.artifacts.generate_video(notebook_id, language="ja")
-                        result.video_task_id = status.task_id
-                        log.info("Video generation started task_id=%s", status.task_id)
+                        task_id = (status.task_id or "").strip() or None
+                        result.video_task_id = task_id
+                        if task_id:
+                            log.info("Video generation started task_id=%s", task_id)
+                        else:
+                            log.warning(
+                                "Video generation returned no task_id - skipping video wait"
+                            )
                     except Exception as exc:
                         log.warning("Video generation trigger failed: %s", exc)
             return result
@@ -217,7 +236,15 @@ class NotebookLMClient:
         self, title: str, articles: List[Article]
     ) -> GenerationResult:
         result = self.create_notebook(title)
-        self.add_sources(result.notebook_id, articles)
+        added = self.add_sources(result.notebook_id, articles)
+        if added < config.MIN_SOURCES_TO_GENERATE:
+            log.warning(
+                "Skipping generation for notebook %s: only %d sources added (minimum %d)",
+                result.notebook_id,
+                added,
+                config.MIN_SOURCES_TO_GENERATE,
+            )
+            return result
         gen = self.trigger_generation(result.notebook_id)
         result.audio_task_id = gen.audio_task_id
         result.video_task_id = gen.video_task_id

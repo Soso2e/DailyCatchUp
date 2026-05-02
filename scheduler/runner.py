@@ -95,6 +95,10 @@ def step_download(result, date_str: str, client: NotebookLMClient | None = None)
     return paths
 
 
+def _empty_asset_paths() -> dict[str, Path | None]:
+    return {"audio": None, "video": None, "summary": None}
+
+
 def step_meta(articles: list[Article], date_str: str, paths: dict) -> VideoMetadata:
     log.info("=== Step: generate metadata ===")
     metadata = generate_metadata(articles, date_str)
@@ -244,40 +248,70 @@ def run_morning_pipeline() -> None:
                 _update_status(status_mgr, status, last_step="source_add_failed")
                 raise RuntimeError("No sources were added to NotebookLM (all URLs failed to resolve or were rejected)")
 
-        if not status.generation_requested:
-            gen_result = client.trigger_generation(notebook_id, audio=True, video=True)
-            _pipeline_state["gen_result"] = gen_result
+        should_generate = added_count >= config.MIN_SOURCES_TO_GENERATE
+        if not should_generate:
+            log.warning(
+                "Skipping NotebookLM generation: only %d sources added (minimum %d)",
+                added_count,
+                config.MIN_SOURCES_TO_GENERATE,
+            )
+            _append_error(
+                status,
+                f"generation skipped: only {added_count} sources added (<{config.MIN_SOURCES_TO_GENERATE})",
+            )
             _update_status(
                 status_mgr,
                 status,
-                generation_requested=True,
-                last_step="generation_requested",
+                generation_requested=False,
+                notebooklm_generated=False,
+                last_step="generation_skipped_low_sources",
+            )
+            nlm_result = None
+        else:
+            if not status.generation_requested:
+                gen_result = client.trigger_generation(notebook_id, audio=True, video=True)
+                _pipeline_state["gen_result"] = gen_result
+                _update_status(
+                    status_mgr,
+                    status,
+                    generation_requested=True,
+                    last_step="generation_requested",
+                )
+            else:
+                gen_result = _pipeline_state.get("gen_result")
+
+            log.info("Waiting for generation completion (max %ds)...", config.NOTEBOOKLM_MAX_WAIT)
+            nlm_result = poll_until_ready(
+                client, notebook_id, gen_result=gen_result, need_audio=True, need_video=True
+            )
+            generated = nlm_result.audio_ready or nlm_result.video_ready
+            gen_updates: dict = {
+                "notebooklm_generated": generated,
+                "last_step": "generated" if generated else "generation_incomplete",
+            }
+            if not status.notebook_url:
+                gen_updates["notebook_url"] = f"https://notebooklm.google.com/notebook/{notebook_id}"
+            _update_status(status_mgr, status, **gen_updates)
+            _pipeline_state["nlm_result"] = nlm_result
+
+        if nlm_result is not None:
+            paths = step_download(nlm_result, date_str, client=client)
+            _update_status(
+                status_mgr,
+                status,
+                audio_downloaded=paths.get("audio") is not None,
+                video_downloaded=paths.get("video") is not None,
+                last_step="assets_downloaded",
             )
         else:
-            gen_result = _pipeline_state.get("gen_result")
-
-        log.info("Waiting for generation completion (max %ds)...", config.NOTEBOOKLM_MAX_WAIT)
-        nlm_result = poll_until_ready(
-            client, notebook_id, gen_result=gen_result, need_audio=True, need_video=True
-        )
-        generated = nlm_result.audio_ready or nlm_result.video_ready
-        gen_updates: dict = {
-            "notebooklm_generated": generated,
-            "last_step": "generated" if generated else "generation_incomplete",
-        }
-        if not status.notebook_url:
-            gen_updates["notebook_url"] = f"https://notebooklm.google.com/notebook/{notebook_id}"
-        _update_status(status_mgr, status, **gen_updates)
-        _pipeline_state["nlm_result"] = nlm_result
-
-        paths = step_download(nlm_result, date_str, client=client)
-        _update_status(
-            status_mgr,
-            status,
-            audio_downloaded=paths.get("audio") is not None,
-            video_downloaded=paths.get("video") is not None,
-            last_step="assets_downloaded",
-        )
+            paths = _empty_asset_paths()
+            _update_status(
+                status_mgr,
+                status,
+                audio_downloaded=False,
+                video_downloaded=False,
+                last_step=status.last_step,
+            )
         _pipeline_state["paths"] = paths
 
         metadata = step_meta(articles, date_str, paths)

@@ -1275,3 +1275,148 @@ Possible causes:
 2026-05-03 05:50:24,274 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
 2026-05-03 05:50:24,274 [INFO] __main__: Waiting for generation completion (max 900s)...
 2026-05-03 05:50:24,945 [INFO] nlm.client: Waiting for audio (task=92bfb5b9-850e-4f65-9196-b4072841f6e4, timeout=900s)...
+2026-05-03 05:59:34,036 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 05:59:34,036 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 05:59:34,543 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 05:59:37,113 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:59:37,113 [INFO] __main__: news_collected already True - loading cached articles
+2026-05-03 05:59:37,567 [INFO] notion.article_store: Loaded 10 articles from Notion page 354d7670-ba17-81f3-963f-c7894ee46b7d
+2026-05-03 05:59:38,979 [INFO] nlm.client: Created notebook id=a14dd433-dfe6-4add-a87e-1680e987de7a
+2026-05-03 05:59:39,667 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 05:59:39,667 [INFO] __main__: Notebook created: id=a14dd433-dfe6-4add-a87e-1680e987de7a url=https://notebooklm.google.com/notebook/a14dd433-dfe6-4add-a87e-1680e987de7a
+2026-05-03 05:59:41,723 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJ -> https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJ
+2026-05-03 05:59:48,179 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJ] (resolved: https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJ): Failed to add source: https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJWT0FFMDd2VVNiaHlMRDF0SEtkQjdoYnFxUHVKeS1saTV3Q2lEVDZLeFMzcU9JMzNTMnlqX1F3?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 05:59:56,220 [DEBUG] nlm.client: Added source: 「Magical Blush」制作発表。呪文コンボシステムとメトロイドヴァニア風の探索を組み合わせた2Dアクションアドベ
+2026-05-03 06:00:03,845 [DEBUG] nlm.client: Added source: Steamで“非常に好評”の高難度アクションADV「Constance」，コンシューマ版を発売。アーティストが自らの精神
+2026-05-03 06:00:05,299 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2d -> https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2d
+2026-05-03 06:00:15,677 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2d] (resolved: https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2d): Failed to add source: https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2doLU53TjFUT3pjR29KOFdqbE1fOVlVUW1McENQZlpSVDluVXFtNGc2Q0haM0tTQ0RuMENTNGl4Q3VzeFhzSjBaeC1oUTB5SlhNSUdZY0R4czdBN2RjMFNvTUZWYmFac1I5bDhhREdiU1hxenl6enZxVS10aDBIUjVTOExKMGVMeHFidW41RGUtcTVvZTVITmNyb2hRU09GUEV5Vnd4a3B0bWhSZHM?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:00:17,002 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTN -> https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTN
+2026-05-03 06:00:26,134 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTN] (resolved: https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTN): Failed to add source: https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTNQZ3ZmT3hzRHotdVY3SVBLSW5Zd3UzaVBWWWM0cEt5LXpBd01oSDRyYUN6R1EwejRGRXE4b2xyaVE5M1hpdXh4Z0hpMnc2NFpHS1U?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:00:27,477 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJ -> https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJ
+2026-05-03 06:00:34,972 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJ] (resolved: https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJ): Failed to add source: https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJfWk4tWkV0ZkQ4RmluS1hUdnFqODJaSVFRRG1FVjlvSG0yQ3ctOVhRek5BUXN4d1kxdkdhb0ZsSy1yR3BaUi1ySnRwQno5RFY5d1hsSXM4R1pYSEFZVjlybHFXdXBDTmpXZw?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:00:36,349 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVV -> https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVV
+2026-05-03 06:00:44,950 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVV] (resolved: https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVV): Failed to add source: https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVVHTnBjSmUwNG01R0RvZFhhUWNteVZFVUVIUTA1YlBGazV4NVRVNzZlaUZSNjgza2JOUEl5a3p2Y0xGN1FuQVVYemRQRDloOUxab2oyYXFQbVNVbVdoYlcyM0FKSnRrOEVZN2swdGVrS3pETjQ?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:00:46,423 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc -> https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc
+2026-05-03 06:00:56,926 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc] (resolved: https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc): Failed to add source: https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc5N3pWczNEWWUwSE5ucGVJTV9NSUpmUjZiTU5nWjNhd3NJNkVnMkxGMldlQjZTampaZ1Y5ejhWYXcwMmpFMldXcWVyOUxtRjhmUld3UHA3THAtQXl1bnIwWHdCV1RVdWM?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:01:04,934 [DEBUG] nlm.client: Added source: 「Die in the Dungeon」，アーリーアクセスを終了して製品版に移行。ダイスでデッキを組むユニークなターン制
+2026-05-03 06:01:13,452 [DEBUG] nlm.client: Added source: ［プレイレポ］「Apex Legends」新レジェンド「アクセル」は，機動力特化のスカーミッシャークラス。戦場をレース場
+2026-05-03 06:01:13,452 [INFO] nlm.client: Added 4/10 sources to notebook a14dd433-dfe6-4add-a87e-1680e987de7a
+2026-05-03 06:01:14,061 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 06:01:15,706 [INFO] nlm.client: Audio generation started task_id=
+2026-05-03 06:01:18,384 [INFO] nlm.client: Video generation started task_id=630077ce-d79f-4235-b116-76f33a7b0977
+2026-05-03 06:01:18,993 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 06:01:18,993 [INFO] __main__: Waiting for generation completion (max 900s)...
+2026-05-03 06:01:19,680 [INFO] nlm.client: No audio task_id – skipping audio wait
+2026-05-03 06:01:19,680 [INFO] nlm.client: Waiting for video (task=630077ce-d79f-4235-b116-76f33a7b0977, timeout=900s)...
+2026-05-03 06:03:53,412 [INFO] __main__: Running full pipeline NOW (test mode)
+2026-05-03 06:03:53,413 [INFO] __main__: ====== Morning pipeline start (2026-05-03) ======
+2026-05-03 06:03:53,960 [INFO] notion.status_manager: Using Notion status manager
+2026-05-03 06:03:54,988 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 06:03:54,988 [INFO] __main__: === Step: collect news (2026-05-03) ===
+2026-05-03 06:03:55,543 [DEBUG] collector.rss_collector: RSS [google_news_ja_ai]: 100 entries
+2026-05-03 06:03:56,030 [DEBUG] collector.rss_collector: RSS [google_news_ja_game]: 69 entries
+2026-05-03 06:03:57,011 [DEBUG] collector.rss_collector: RSS [google_news_en_ai]: 100 entries
+2026-05-03 06:03:57,570 [DEBUG] collector.rss_collector: RSS [google_news_en_game]: 100 entries
+2026-05-03 06:03:58,529 [DEBUG] collector.rss_collector: RSS [google_news_ja_ai_global]: 100 entries
+2026-05-03 06:03:58,667 [DEBUG] collector.rss_collector: RSS [4gamer]: 100 entries
+2026-05-03 06:03:58,976 [DEBUG] collector.rss_collector: RSS [famitsu]: 0 entries
+2026-05-03 06:03:59,080 [DEBUG] collector.rss_collector: RSS [aimedia]: 0 entries
+2026-05-03 06:03:59,213 [DEBUG] collector.rss_collector: RSS [techcrunch_ai]: 20 entries
+2026-05-03 06:03:59,466 [DEBUG] collector.rss_collector: RSS [venturebeat_ai]: 7 entries
+2026-05-03 06:03:59,466 [INFO] collector.rss_collector: RSS collected 74 articles total
+2026-05-03 06:03:59,927 [DEBUG] collector.newsapi_collector: NewsAPI [("AI" OR "artificial intelligence" OR "machine learning" OR "LLM" OR "generative AI") AND (game OR gaming OR developer OR release OR model)]: fetched 0 items
+2026-05-03 06:04:00,356 [DEBUG] collector.newsapi_collector: NewsAPI ["OpenAI" OR "Anthropic" OR "Google AI" OR "Gemini" OR "Claude"]: fetched 0 items
+2026-05-03 06:04:00,773 [DEBUG] collector.newsapi_collector: NewsAPI ["生成AI" OR "人工知能" OR "機械学習" OR "LLM"]: fetched 0 items
+2026-05-03 06:04:00,773 [INFO] collector.newsapi_collector: NewsAPI collected 0 articles total
+2026-05-03 06:04:00,916 [INFO] collector.filter: Filtered to 10 articles (from 74 candidates, min=2)
+2026-05-03 06:04:00,916 [INFO] __main__: Selected 10 articles for today
+2026-05-03 06:04:00,916 [INFO] __main__:   1. [JA] 「ChatGPT Images 2.0」 vs. 「Gemini Nano Banana」--画像生成AIの実力を比較 - ZDNET Japan
+2026-05-03 06:04:00,916 [INFO] __main__:   2. [JA] 「Magical Blush」制作発表。呪文コンボシステムとメトロイドヴァニア風の探索を組み合わせた2Dアクションアドベンチャー
+2026-05-03 06:04:00,916 [INFO] __main__:   3. [JA] Steamで“非常に好評”の高難度アクションADV「Constance」，コンシューマ版を発売。アーティストが自らの精神世界からの脱出を目指す
+2026-05-03 06:04:00,916 [INFO] __main__:   4. [EN] Anthropic's most powerful AI model just exposed a crisis in corporate governance
+2026-05-03 06:04:00,916 [INFO] __main__:   5. [JA] 最高裁長官、保釈に「不断の検討が必要」 生成AIは「猛獣」と表現 - 朝日新聞
+2026-05-03 06:04:00,916 [INFO] __main__:   6. [EN] Richard Dawkins and The Claude Delusion - Marcus on AI | Substack
+2026-05-03 06:04:00,916 [INFO] __main__:   7. [EN] Anthropic in Talks to Buy AI Chips From U.K. Startup - The Information
+2026-05-03 06:04:00,916 [INFO] __main__:   8. [EN] AI: Artificial Intelligence Review Part 8 - mindmatters.ai
+2026-05-03 06:04:00,917 [INFO] __main__:   9. [JA] 「Die in the Dungeon」，アーリーアクセスを終了して製品版に移行。ダイスでデッキを組むユニークなターン制ローグライト
+2026-05-03 06:04:00,917 [INFO] __main__:   10. [JA] ［プレイレポ］「Apex Legends」新レジェンド「アクセル」は，機動力特化のスカーミッシャークラス。戦場をレース場に変える能力をチェックだ
+2026-05-03 06:04:02,340 [INFO] notion.article_store: Saved 10 articles to Notion page 354d7670-ba17-813f-acec-cb2297cbaa45
+2026-05-03 06:04:02,964 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 06:04:04,464 [INFO] nlm.client: Created notebook id=2a1f0aaf-0853-43d1-bcb0-799dee376069
+2026-05-03 06:04:07,081 [DEBUG] notion.status_manager: Notion status saved for 2026-05-03
+2026-05-03 06:04:07,081 [INFO] __main__: Notebook created: id=2a1f0aaf-0853-43d1-bcb0-799dee376069 url=https://notebooklm.google.com/notebook/2a1f0aaf-0853-43d1-bcb0-799dee376069
+2026-05-03 06:04:09,132 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJ -> https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJ
+2026-05-03 06:04:16,300 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJ] (resolved: https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJ): Failed to add source: https://news.google.com/rss/articles/CBMiU0FVX3lxTE9NQXpzS2VPcVl2ZUp1LTFhQjBrdTJWT0FFMDd2VVNiaHlMRDF0SEtkQjdoYnFxUHVKeS1saTV3Q2lEVDZLeFMzcU9JMzNTMnlqX1F3?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:04:25,449 [DEBUG] nlm.client: Added source: 「Magical Blush」制作発表。呪文コンボシステムとメトロイドヴァニア風の探索を組み合わせた2Dアクションアドベ
+2026-05-03 06:04:33,321 [DEBUG] nlm.client: Added source: Steamで“非常に好評”の高難度アクションADV「Constance」，コンシューマ版を発売。アーティストが自らの精神
+2026-05-03 06:04:34,781 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2d -> https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2d
+2026-05-03 06:04:45,637 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2d] (resolved: https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2d): Failed to add source: https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdTM3MlFQcTI4eHVHTzg2RE1tN2doLU53TjFUT3pjR29KOFdqbE1fOVlVUW1McENQZlpSVDluVXFtNGc2Q0haM0tTQ0RuMENTNGl4Q3VzeFhzSjBaeC1oUTB5SlhNSUdZY0R4czdBN2RjMFNvTUZWYmFac1I5bDhhREdiU1hxenl6enZxVS10aDBIUjVTOExKMGVMeHFidW41RGUtcTVvZTVITmNyb2hRU09GUEV5Vnd4a3B0bWhSZHM?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:04:46,975 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTN -> https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTN
+2026-05-03 06:04:56,387 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTN] (resolved: https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTN): Failed to add source: https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1PVzc2c1FGdDJKNFVfVTNPRnlVWTNQZ3ZmT3hzRHotdVY3SVBLSW5Zd3UzaVBWWWM0cEt5LXpBd01oSDRyYUN6R1EwejRGRXE4b2xyaVE5M1hpdXh4Z0hpMnc2NFpHS1U?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:04:57,735 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJ -> https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJ
+2026-05-03 06:05:08,886 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJ] (resolved: https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJ): Failed to add source: https://news.google.com/rss/articles/CBMifkFVX3lxTFBWSWR3ek4wdGU2SDE3bzVabnR5bUJfWk4tWkV0ZkQ4RmluS1hUdnFqODJaSVFRRG1FVjlvSG0yQ3ctOVhRek5BUXN4d1kxdkdhb0ZsSy1yR3BaUi1ySnRwQno5RFY5d1hsSXM4R1pYSEFZVjlybHFXdXBDTmpXZw?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:05:10,334 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVV -> https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVV
+2026-05-03 06:05:19,725 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVV] (resolved: https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVV): Failed to add source: https://news.google.com/rss/articles/CBMihwFBVV95cUxPbk9GTG50U29sdjAtbWhpTHhySVVHTnBjSmUwNG01R0RvZFhhUWNteVZFVUVIUTA1YlBGazV4NVRVNzZlaUZSNjgza2JOUEl5a3p2Y0xGN1FuQVVYemRQRDloOUxab2oyYXFQbVNVbVdoYlcyM0FKSnRrOEVZN2swdGVrS3pETjQ?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:05:21,073 [DEBUG] nlm.url_resolver: Resolved https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc -> https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc
+2026-05-03 06:05:30,111 [WARNING] nlm.client: Could not add source [https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc] (resolved: https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc): Failed to add source: https://news.google.com/rss/articles/CBMifEFVX3lxTE5zT0hnZHRYcnhxbi1qSHg3bWVYelc5N3pWczNEWWUwSE5ucGVJTV9NSUpmUjZiTU5nWjNhd3NJNkVnMkxGMldlQjZTampaZ1Y5ejhWYXcwMmpFMldXcWVyOUxtRjhmUld3UHA3THAtQXl1bnIwWHdCV1RVdWM?oc=5&hl=en-US&gl=US&ceid=US:en
+Possible causes:
+  - URL is invalid or inaccessible
+  - Content is behind a paywall or requires authentication
+  - Page content is empty or could not be parsed
+  - Rate limiting or quota exceeded
+2026-05-03 06:05:37,985 [DEBUG] nlm.client: Added source: 「Die in the Dungeon」，アーリーアクセスを終了して製品版に移行。ダイスでデッキを組むユニークなターン制
