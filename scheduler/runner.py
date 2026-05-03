@@ -52,6 +52,15 @@ def _append_error(status: DailyStatus, message: str) -> None:
     status.error_log = f"{status.error_log} | {message}".strip(" |")
 
 
+def _collect_generation_errors(result) -> list[str]:
+    errors: list[str] = []
+    if result.audio_error:
+        errors.append(f"audio:{result.audio_status or 'unknown'}:{result.audio_error}")
+    if result.video_error:
+        errors.append(f"video:{result.video_status or 'unknown'}:{result.video_error}")
+    return errors
+
+
 # ---------------------------------------------------------------------------
 # Pipeline steps
 # ---------------------------------------------------------------------------
@@ -99,9 +108,13 @@ def _empty_asset_paths() -> dict[str, Path | None]:
     return {"audio": None, "video": None, "summary": None}
 
 
-def step_meta(articles: list[Article], date_str: str, paths: dict) -> VideoMetadata:
+def step_meta(articles: list[Article], date_str: str, paths: dict) -> VideoMetadata | None:
     log.info("=== Step: generate metadata ===")
     metadata = generate_metadata(articles, date_str)
+    if metadata is None:
+        log.warning("Metadata generation skipped")
+        return None
+
     log.info("Title: %s", metadata.title)
 
     out_dir = output_dir(date_str)
@@ -235,7 +248,8 @@ def run_morning_pipeline() -> None:
             added_count = status.sources_added_count
             log.info("source_added already True - keeping previous count=%d", added_count)
         else:
-            added_count = client.add_sources(notebook_id, articles)
+            add_result = client.add_sources(notebook_id, articles)
+            added_count = add_result.added
             _update_status(
                 status_mgr,
                 status,
@@ -271,11 +285,15 @@ def run_morning_pipeline() -> None:
             if not status.generation_requested:
                 gen_result = client.trigger_generation(notebook_id, audio=True, video=True)
                 _pipeline_state["gen_result"] = gen_result
+                for message in _collect_generation_errors(gen_result):
+                    _append_error(status, message)
                 _update_status(
                     status_mgr,
                     status,
-                    generation_requested=True,
-                    last_step="generation_requested",
+                    generation_requested=bool(gen_result.audio_task_id or gen_result.video_task_id),
+                    last_step="generation_requested"
+                    if (gen_result.audio_task_id or gen_result.video_task_id)
+                    else "generation_trigger_skipped",
                 )
             else:
                 gen_result = _pipeline_state.get("gen_result")
@@ -285,6 +303,8 @@ def run_morning_pipeline() -> None:
                 client, notebook_id, gen_result=gen_result, need_audio=True, need_video=True
             )
             generated = nlm_result.audio_ready or nlm_result.video_ready
+            for message in _collect_generation_errors(nlm_result):
+                _append_error(status, message)
             gen_updates: dict = {
                 "notebooklm_generated": generated,
                 "last_step": "generated" if generated else "generation_incomplete",
@@ -315,7 +335,16 @@ def run_morning_pipeline() -> None:
         _pipeline_state["paths"] = paths
 
         metadata = step_meta(articles, date_str, paths)
-        _update_status(status_mgr, status, meta_generated=True, last_step="meta_generated")
+        if metadata is None:
+            _append_error(status, "metadata: skipped (gemini_api_key_missing_or_invalid_or_request_failed)")
+            _update_status(
+                status_mgr,
+                status,
+                meta_generated=False,
+                last_step="meta_skipped",
+            )
+        else:
+            _update_status(status_mgr, status, meta_generated=True, last_step="meta_generated")
         _pipeline_state["metadata"] = metadata
 
     except Exception as exc:
@@ -359,6 +388,8 @@ def run_evening_pipeline() -> None:
 
     if metadata is None:
         log.error("No metadata available - cannot proceed with evening pipeline")
+        _append_error(status, "evening: metadata_missing")
+        _update_status(status_mgr, status, last_step="evening_skipped_no_metadata")
         return
 
     try:

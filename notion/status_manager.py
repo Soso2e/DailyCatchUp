@@ -26,6 +26,71 @@ if TYPE_CHECKING:
 log = get_logger(__name__)
 
 SQLITE_PATH = Path(config.BASE_DIR) / ".pipeline_status.db"
+ARTICLE_CACHE_DIR = Path(config.OUTPUTS_DIR)
+
+
+def _articles_cache_path(date_str: str) -> Path:
+    return ARTICLE_CACHE_DIR / date_str / "articles.json"
+
+
+def _serialize_articles(articles: "List[Article]") -> list[dict]:
+    data: list[dict] = []
+    for article in articles:
+        item = asdict(article)
+        item["published_at"] = article.published_at.isoformat()
+        data.append(item)
+    return data
+
+
+def _deserialize_articles(data: list[dict]) -> "List[Article]":
+    from collector.rss_collector import Article
+
+    articles: list[Article] = []
+    for item in data:
+        published_at_raw = item.get("published_at")
+        try:
+            published_at = (
+                datetime.fromisoformat(published_at_raw)
+                if isinstance(published_at_raw, str) and published_at_raw
+                else datetime.now(timezone.utc)
+            )
+        except ValueError:
+            published_at = datetime.now(timezone.utc)
+
+        articles.append(
+            Article(
+                title=item.get("title", ""),
+                url=item.get("url", ""),
+                published_at=published_at,
+                source=item.get("source", ""),
+                language=item.get("language", ""),
+                summary=item.get("summary", ""),
+                original_url_candidates=item.get("original_url_candidates", []) or [],
+                text_excerpt=item.get("text_excerpt", "") or "",
+                score=float(item.get("score", 0.0) or 0.0),
+            )
+        )
+    return articles
+
+
+def _save_articles_cache(date_str: str, articles: "List[Article]") -> None:
+    path = _articles_cache_path(date_str)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(_serialize_articles(articles), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _load_articles_cache(date_str: str) -> "List[Article]":
+    path = _articles_cache_path(date_str)
+    if not path.exists():
+        return []
+    try:
+        return _deserialize_articles(json.loads(path.read_text(encoding="utf-8")))
+    except Exception as exc:
+        log.warning("Could not load article cache %s: %s", path, exc)
+        return []
 
 
 @dataclass
@@ -179,10 +244,14 @@ class NotionStatusManager:
 
     def save_articles(self, date_str: str, articles: "List[Article]") -> None:
         from notion.article_store import save_articles_to_page
+        _save_articles_cache(date_str, articles)
         page_id = self._find_or_create_page(date_str)
         save_articles_to_page(self._client, page_id, articles)
 
     def load_articles(self, date_str: str) -> "List[Article]":
+        cached = _load_articles_cache(date_str)
+        if cached:
+            return cached
         from notion.article_store import load_articles_from_page
         page_id = self._find_page(date_str)
         if not page_id:
@@ -341,10 +410,8 @@ class SQLiteStatusManager:
         log.debug("SQLite status saved for %s", status.date)
 
     def save_articles(self, date_str: str, articles: "List[Article]") -> None:
-        data = [
-            {"title": a.title, "url": a.url, "source": a.source, "language": a.language}
-            for a in articles
-        ]
+        _save_articles_cache(date_str, articles)
+        data = _serialize_articles(articles)
         with sqlite3.connect(self._db_path) as conn:
             conn.execute(
                 """
@@ -356,7 +423,9 @@ class SQLiteStatusManager:
         log.debug("SQLite articles saved for %s (%d items)", date_str, len(articles))
 
     def load_articles(self, date_str: str) -> "List[Article]":
-        from collector.rss_collector import Article
+        cached = _load_articles_cache(date_str)
+        if cached:
+            return cached
 
         with sqlite3.connect(self._db_path) as conn:
             row = conn.execute(
@@ -364,16 +433,7 @@ class SQLiteStatusManager:
             ).fetchone()
         if not row:
             return []
-        return [
-            Article(
-                title=d["title"],
-                url=d["url"],
-                published_at=datetime.now(timezone.utc),
-                source=d["source"],
-                language=d["language"],
-            )
-            for d in json.loads(row[0])
-        ]
+        return _deserialize_articles(json.loads(row[0]))
 
 
 # ---------------------------------------------------------------------------

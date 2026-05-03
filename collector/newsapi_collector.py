@@ -87,6 +87,7 @@ def collect_newsapi(max_age_hours: int = 24) -> List[Article]:
                         source=source_name,
                         language=search.get("language") or "mixed",
                         summary=item.get("description") or "",
+                        text_excerpt=(item.get("content") or item.get("description") or ""),
                     )
                 )
 
