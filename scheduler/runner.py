@@ -251,6 +251,11 @@ def run_morning_pipeline() -> None:
                 last_step="notebook_created",
             )
             log.info("Notebook created: id=%s url=%s", notebook_id, nb_url)
+            if hasattr(status_mgr, "save_notebook_link"):
+                try:
+                    status_mgr.save_notebook_link(date_str, nb_url)
+                except Exception as _exc:
+                    log.warning("Could not write NotebookLM link to Notion page: %s", _exc)
 
         if status.source_added and status.sources_added_count > 0:
             added_count = status.sources_added_count

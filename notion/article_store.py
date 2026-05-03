@@ -20,11 +20,34 @@ if TYPE_CHECKING:
 log = get_logger(__name__)
 
 _SECTION_MARKER = "収集記事"
+_NOTEBOOK_SECTION_MARKER = "NotebookLM"
 
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
+def save_notebook_link_to_page(client, page_id: str, notebook_url: str) -> None:
+    """Upsert a NotebookLM link section on *page_id*."""
+    _clear_notebook_section(client, page_id)
+
+    blocks = [
+        {
+            "object": "block",
+            "type": "heading_2",
+            "heading_2": {
+                "rich_text": [{"type": "text", "text": {"content": _NOTEBOOK_SECTION_MARKER}}]
+            },
+        },
+        {
+            "object": "block",
+            "type": "bookmark",
+            "bookmark": {"url": notebook_url},
+        },
+    ]
+    client.blocks.children.append(block_id=page_id, children=blocks)
+    log.info("Saved NotebookLM link to Notion page %s", page_id)
+
 
 def save_articles_to_page(client, page_id: str, articles: List["Article"]) -> None:
     """Replace the article section on *page_id* with *articles*."""
@@ -92,6 +115,35 @@ def load_articles_from_page(client, page_id: str) -> List["Article"]:
 # ---------------------------------------------------------------------------
 # Internals
 # ---------------------------------------------------------------------------
+
+def _clear_notebook_section(client, page_id: str) -> None:
+    """Delete existing NotebookLM section blocks so we can overwrite."""
+    blocks = _get_all_children(client, page_id)
+    in_section = False
+    to_delete: list[str] = []
+
+    for block in blocks:
+        btype = block.get("type")
+
+        if btype == "heading_2":
+            if _plain_text(block["heading_2"]["rich_text"]) == _NOTEBOOK_SECTION_MARKER:
+                in_section = True
+                to_delete.append(block["id"])
+                continue
+            elif in_section:
+                break
+
+        if in_section:
+            if btype in ("heading_1", "heading_3"):
+                break
+            to_delete.append(block["id"])
+
+    for block_id in to_delete:
+        try:
+            client.blocks.delete(block_id=block_id)
+        except Exception as exc:
+            log.warning("Could not delete block %s: %s", block_id, exc)
+
 
 def _clear_article_section(client, page_id: str) -> None:
     """Delete the existing article section blocks so we can overwrite."""

@@ -258,6 +258,11 @@ class NotionStatusManager:
             return []
         return load_articles_from_page(self._client, page_id)
 
+    def save_notebook_link(self, date_str: str, notebook_url: str) -> None:
+        from notion.article_store import save_notebook_link_to_page
+        page_id = self._find_or_create_page(date_str)
+        save_notebook_link_to_page(self._client, page_id, notebook_url)
+
 
 # ---------------------------------------------------------------------------
 # SQLite backend
