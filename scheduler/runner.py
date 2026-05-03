@@ -26,7 +26,9 @@ import schedule
 
 import config
 from collector.filter import filter_articles
+from collector.hackernews_collector import collect_hackernews
 from collector.newsapi_collector import collect_newsapi
+from collector.qiita_collector import collect_qiita
 from collector.rss_collector import collect_rss, Article
 from discord.morning_post import post_morning_news
 from discord.night_notify import notify_youtube_uploaded
@@ -61,7 +63,9 @@ def step_collect(date_str: str) -> list[Article]:
     log.info("=== Step: collect news (%s) ===", date_str)
     rss_articles = collect_rss(max_age_hours=config.NEWS_MAX_AGE_HOURS)
     api_articles = collect_newsapi(max_age_hours=config.NEWS_MAX_AGE_HOURS)
-    all_articles = rss_articles + api_articles
+    qiita_articles = collect_qiita(max_age_hours=config.NEWS_MAX_AGE_HOURS)
+    hn_articles = collect_hackernews(max_age_hours=config.NEWS_MAX_AGE_HOURS)
+    all_articles = rss_articles + api_articles + qiita_articles + hn_articles
 
     articles = filter_articles(all_articles)
 
@@ -69,7 +73,9 @@ def step_collect(date_str: str) -> list[Article]:
         log.warning("Too few articles (%d). Retrying with extended range (48h)", len(articles))
         rss2 = collect_rss(max_age_hours=48)
         api2 = collect_newsapi(max_age_hours=48)
-        articles = filter_articles(rss2 + api2)
+        qiita2 = collect_qiita(max_age_hours=48)
+        hn2 = collect_hackernews(max_age_hours=48)
+        articles = filter_articles(rss2 + api2 + qiita2 + hn2)
 
     log.info("Selected %d articles for today", len(articles))
     for i, a in enumerate(articles, 1):

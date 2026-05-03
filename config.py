@@ -10,6 +10,9 @@ OUTPUTS_DIR = Path(os.getenv("OUTPUTS_DIR", str(BASE_DIR / "outputs")))
 # News API
 NEWS_API_KEY = os.getenv("NEWS_API_KEY", "")
 
+# Qiita API (optional — increases rate limit from 60 to 1000 req/h)
+QIITA_API_TOKEN = os.getenv("QIITA_API_TOKEN", "")
+
 # NotebookLM (Google account)
 GOOGLE_EMAIL = os.getenv("GOOGLE_EMAIL", "")
 GOOGLE_PASSWORD = os.getenv("GOOGLE_PASSWORD", "")
