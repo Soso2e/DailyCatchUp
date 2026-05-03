@@ -500,6 +500,8 @@ def run_now() -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="DailyCatchUp pipeline runner")
     parser.add_argument("--now", action="store_true", help="Run full pipeline immediately")
+    parser.add_argument("--morning", action="store_true", help="Run morning pipeline (for Task Scheduler)")
+    parser.add_argument("--evening", action="store_true", help="Run evening pipeline (for Task Scheduler)")
     parser.add_argument(
         "--step",
         choices=["collect", "notebooklm", "download", "meta", "discord-morning", "youtube", "discord-night"],
@@ -511,6 +513,10 @@ if __name__ == "__main__":
 
     if args.now:
         run_now()
+    elif args.morning:
+        run_morning_pipeline()
+    elif args.evening:
+        run_evening_pipeline()
     elif args.step:
         if args.step == "collect":
             articles = step_collect(date_str)
