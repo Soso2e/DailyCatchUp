@@ -1,2 +1,24 @@
 *.env
-client_secret_952458395326-aamd4da9g424s0l4fgi3nbp4g1or9gp9.apps.googleusercontent.com.json
+client_secret_*.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Runtime / secrets
+.notebooklm_session.json
+.youtube_token.json
+.pipeline_status.db*
+
+# Outputs
+outputs/
+
+# Chrome automation profile
+.chrome_profile/
+
+# Claude Code local settings
+.claude/
+
+# Scripts cache
+scripts/__pycache__/

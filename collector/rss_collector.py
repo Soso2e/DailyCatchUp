@@ -16,6 +16,7 @@ log = get_logger(__name__)
 
 RSS_FEEDS: dict[str, tuple[str, str]] = {
     # (url, language)
+    # --- Google News ---
     "google_news_ja_ai": (
         "https://news.google.com/rss/search?q=AI+人工知能&hl=ja&gl=JP&ceid=JP:ja",
         "ja",
@@ -36,14 +37,33 @@ RSS_FEEDS: dict[str, tuple[str, str]] = {
         "https://news.google.com/rss/search?q=(生成AI+OR+人工知能+OR+機械学習+OR+LLM)&hl=ja&gl=JP&ceid=JP:ja",
         "ja",
     ),
+    # --- ゲーム専門メディア ---
     "4gamer": ("https://www.4gamer.net/rss/index.xml", "ja"),
     "famitsu": ("https://www.famitsu.com/rss/gamers/", "ja"),
+    # --- AI メディア ---
     "aimedia": ("https://aismiley.co.jp/feed/", "ja"),
+    # --- 英語テックメディア ---
     "techcrunch_ai": (
         "https://techcrunch.com/tag/artificial-intelligence/feed/",
         "en",
     ),
     "venturebeat_ai": ("https://venturebeat.com/category/ai/feed/", "en"),
+    # --- Zenn (日本語開発者コミュニティ) ---
+    "zenn_ai": ("https://zenn.dev/topics/ai/feed", "ja"),
+    "zenn_llm": ("https://zenn.dev/topics/llm/feed", "ja"),
+    "zenn_chatgpt": ("https://zenn.dev/topics/chatgpt/feed", "ja"),
+    "zenn_game": ("https://zenn.dev/topics/game/feed", "ja"),
+    # --- はてなブックマーク テクノロジー ---
+    "hatena_bookmark_it": ("https://b.hatena.ne.jp/hotentry/it.rss", "ja"),
+    # --- 企業テックブログ ---
+    "mercari_engineering": (
+        "https://engineering.mercari.com/blog/feed.xml",
+        "ja",
+    ),
+    "dena_engineering": ("https://engineering.dena.com/feed", "ja"),
+    "ntt_engineers": ("https://engineers.ntt.com/feed", "ja"),
+    "cyberagent_ai_blog": ("https://cyberagent.ai/blog/feed", "ja"),
+    "line_engineering": ("https://engineering.linecorp.com/feed", "ja"),
 }
 
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
@@ -62,6 +82,20 @@ class Article:
     original_url_candidates: list[str] = field(default_factory=list, compare=False)
     text_excerpt: str = field(default="", compare=False)
     score: float = field(default=0.0, compare=False)
+    popularity: int = field(default=0, compare=False)  # likes / bookmarks / HN score
+
+
+def _parse_popularity(entry) -> int:
+    """Try to extract bookmark/like count from feed entry metadata."""
+    # はてなブックマーク: hatena:bookmarkcount
+    for attr in ("hatena_bookmarkcount", "bookmarkcount"):
+        val = getattr(entry, attr, None) or entry.get(attr)
+        if val is not None:
+            try:
+                return int(val)
+            except (ValueError, TypeError):
+                pass
+    return 0
 
 
 def _strip_html(text: str) -> str:
@@ -82,7 +116,7 @@ def _extract_urls_from_text(text: str) -> list[str]:
             idx = lowered.find(marker, start)
             if idx < 0:
                 break
-            value = text[idx + len(marker) :]
+            value = text[idx + len(marker):]
             for sep in ("&amp;", "&", '"', "'", " ", "<", ">"):
                 if sep in value:
                     value = value.split(sep, 1)[0]
@@ -206,6 +240,7 @@ def collect_rss(max_age_hours: int = 24) -> List[Article]:
                         summary=entry.get("summary", ""),
                         original_url_candidates=_collect_original_url_candidates(entry),
                         text_excerpt=_build_text_excerpt(entry),
+                        popularity=_parse_popularity(entry),
                     )
                 )
         except Exception as exc:
