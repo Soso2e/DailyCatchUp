@@ -9,7 +9,7 @@ import httpx
 
 import config
 from logger import get_logger
-from notebooklm.client import GenerationResult
+from nlm.client import GenerationResult
 
 log = get_logger(__name__)
 

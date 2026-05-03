@@ -1,16 +1,4 @@
-"""Main pipeline runner.
-
-Schedules and executes the full daily news pipeline:
-  06:00  collect → notebooklm → wait for generation → download assets → generate meta
-  07:00  Discord morning post
-  19:00  YouTube upload
-  19:05  Discord night notification
-
-Usage:
-  python -m scheduler.runner          # daemon mode (runs continuously with schedule)
-  python -m scheduler.runner --now    # run full pipeline immediately (for testing)
-  python -m scheduler.runner --step <step>  # run a single step
-"""
+"""Main pipeline runner."""
 
 from __future__ import annotations
 
@@ -27,7 +15,7 @@ import schedule
 import config
 from collector.filter import filter_articles
 from collector.newsapi_collector import collect_newsapi
-from collector.rss_collector import collect_rss, Article
+from collector.rss_collector import Article, collect_rss
 from discord.morning_post import post_morning_news
 from discord.night_notify import notify_youtube_uploaded
 from downloader.asset_downloader import AssetDownloader
@@ -35,8 +23,8 @@ from logger import get_logger
 from meta.meta_generator import VideoMetadata, generate_metadata
 from meta.thumbnail import generate_thumbnail
 from notion.status_manager import DailyStatus, get_status_manager
-from notebooklm.client import NotebookLMClient
-from notebooklm.poller import poll_until_ready
+from nlm.client import NotebookLMClient
+from nlm.poller import poll_until_ready
 from youtube.uploader import upload_video
 
 log = get_logger(__name__)
@@ -48,9 +36,29 @@ def today_str() -> str:
 
 def output_dir(date_str: str | None = None) -> Path:
     d = date_str or today_str()
-    p = Path(config.OUTPUTS_DIR) / d
-    p.mkdir(parents=True, exist_ok=True)
-    return p
+    path = Path(config.OUTPUTS_DIR) / d
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _update_status(status_mgr, status: DailyStatus, **changes) -> DailyStatus:
+    for key, value in changes.items():
+        setattr(status, key, value)
+    status_mgr.save(status)
+    return status
+
+
+def _append_error(status: DailyStatus, message: str) -> None:
+    status.error_log = f"{status.error_log} | {message}".strip(" |")
+
+
+def _collect_generation_errors(result) -> list[str]:
+    errors: list[str] = []
+    if result.audio_error:
+        errors.append(f"audio:{result.audio_status or 'unknown'}:{result.audio_error}")
+    if result.video_error:
+        errors.append(f"video:{result.video_status or 'unknown'}:{result.video_error}")
+    return errors
 
 
 # ---------------------------------------------------------------------------
@@ -61,47 +69,52 @@ def step_collect(date_str: str) -> list[Article]:
     log.info("=== Step: collect news (%s) ===", date_str)
     rss_articles = collect_rss(max_age_hours=config.NEWS_MAX_AGE_HOURS)
     api_articles = collect_newsapi(max_age_hours=config.NEWS_MAX_AGE_HOURS)
-    all_articles = rss_articles + api_articles
-
-    articles = filter_articles(all_articles)
+    articles = filter_articles(rss_articles + api_articles)
 
     if len(articles) < config.MIN_ARTICLES:
         log.warning("Too few articles (%d). Retrying with extended range (48h)", len(articles))
-        rss2 = collect_rss(max_age_hours=48)
-        api2 = collect_newsapi(max_age_hours=48)
-        articles = filter_articles(rss2 + api2)
+        articles = filter_articles(
+            collect_rss(max_age_hours=48) + collect_newsapi(max_age_hours=48)
+        )
 
     log.info("Selected %d articles for today", len(articles))
-    for i, a in enumerate(articles, 1):
-        log.info("  %d. [%s] %s", i, a.language.upper(), a.title[:80])
-
+    for idx, article in enumerate(articles, 1):
+        log.info("  %d. [%s] %.80s", idx, article.language.upper(), article.title)
     return articles
 
 
-def step_notebooklm(articles: list[Article], date_str: str):
-    log.info("=== Step: NotebookLM generation ===")
-    client = NotebookLMClient()
-    title = f"AI・ゲームニュース {date_str}"
-    result = client.create_notebook_with_articles(title, articles)
-    log.info("Notebook created: id=%s", result.notebook_id)
-
-    log.info("Polling for generation completion (max %ds)...", config.NOTEBOOKLM_MAX_WAIT)
-    result = poll_until_ready(client, result.notebook_id, need_audio=True, need_video=True)
-    return client, result
-
-
-def step_download(result, date_str: str) -> dict[str, Path | None]:
+def step_download(result, date_str: str, client: NotebookLMClient | None = None) -> dict[str, Path | None]:
     log.info("=== Step: download assets ===")
-    downloader = AssetDownloader(output_dir(date_str))
-    paths = downloader.download_all(result)
-    log.info("Assets: audio=%s video=%s summary=%s",
-             paths["audio"], paths["video"], paths["summary"])
+    if client is not None:
+        paths = client.download_assets(
+            result.notebook_id,
+            output_dir(date_str),
+            audio=result.audio_ready,
+            video=result.video_ready,
+        )
+    else:
+        downloader = AssetDownloader(output_dir(date_str))
+        paths = downloader.download_all(result)
+    log.info(
+        "Assets: audio=%s video=%s summary=%s",
+        paths["audio"],
+        paths["video"],
+        paths["summary"],
+    )
     return paths
 
 
-def step_meta(articles: list[Article], date_str: str, paths: dict) -> VideoMetadata:
-    log.info("=== Step: generate metadata (Claude) ===")
+def _empty_asset_paths() -> dict[str, Path | None]:
+    return {"audio": None, "video": None, "summary": None}
+
+
+def step_meta(articles: list[Article], date_str: str, paths: dict) -> VideoMetadata | None:
+    log.info("=== Step: generate metadata ===")
     metadata = generate_metadata(articles, date_str)
+    if metadata is None:
+        log.warning("Metadata generation skipped")
+        return None
+
     log.info("Title: %s", metadata.title)
 
     out_dir = output_dir(date_str)
@@ -159,7 +172,10 @@ def step_youtube(paths: dict, metadata: VideoMetadata, date_str: str) -> str | N
 
 
 def step_discord_night(
-    youtube_url: str, metadata: VideoMetadata, articles: list[Article], date_str: str
+    youtube_url: str,
+    metadata: VideoMetadata,
+    articles: list[Article],
+    date_str: str,
 ) -> bool:
     log.info("=== Step: Discord night notification ===")
     return notify_youtube_uploaded(youtube_url, metadata, articles, date_str)
@@ -173,7 +189,7 @@ _pipeline_state: dict = {}
 
 
 def run_morning_pipeline() -> None:
-    """Runs at 06:00: collect → notebooklm → download → meta → discord morning."""
+    """Run the morning pipeline with resumable status updates."""
     date_str = today_str()
     log.info("====== Morning pipeline start (%s) ======", date_str)
 
@@ -181,42 +197,165 @@ def run_morning_pipeline() -> None:
     status = status_mgr.get(date_str)
 
     try:
-        # 1. Collect
-        articles = step_collect(date_str)
-        status.news_collected = True
-        status_mgr.save(status)
+        _update_status(status_mgr, status, last_step="starting")
+
+        if status.news_collected:
+            log.info("news_collected already True - loading cached articles")
+            articles = status_mgr.load_articles(date_str)
+            if not articles:
+                log.warning("Cache empty despite news_collected=True, re-collecting")
+                articles = step_collect(date_str)
+                status_mgr.save_articles(date_str, articles)
+                _update_status(
+                    status_mgr,
+                    status,
+                    news_collected=True,
+                    selected_article_count=len(articles),
+                    last_step="news_collected",
+                )
+        else:
+            articles = step_collect(date_str)
+            status_mgr.save_articles(date_str, articles)
+            _update_status(
+                status_mgr,
+                status,
+                news_collected=True,
+                selected_article_count=len(articles),
+                last_step="news_collected",
+            )
         _pipeline_state["articles"] = articles
 
-        # 2. NotebookLM
-        _, nlm_result = step_notebooklm(articles, date_str)
-        status.notebooklm_generated = nlm_result.audio_ready or nlm_result.video_ready
-        status_mgr.save(status)
-        _pipeline_state["nlm_result"] = nlm_result
+        client = NotebookLMClient()
 
-        # 3. Download
-        paths = step_download(nlm_result, date_str)
-        status.audio_downloaded = paths.get("audio") is not None
-        status.video_downloaded = paths.get("video") is not None
-        status_mgr.save(status)
+        if status.notebook_created and status.notebook_id:
+            notebook_id = status.notebook_id
+            log.info("Reusing existing notebook id=%s", notebook_id)
+        else:
+            create_result = client.create_notebook(f"AI・ゲームニュース {date_str}")
+            notebook_id = create_result.notebook_id
+            nb_url = f"https://notebooklm.google.com/notebook/{notebook_id}"
+            _update_status(
+                status_mgr,
+                status,
+                notebook_created=True,
+                notebook_id=notebook_id,
+                notebook_url=nb_url,
+                last_step="notebook_created",
+            )
+            log.info("Notebook created: id=%s url=%s", notebook_id, nb_url)
+
+        if status.source_added and status.sources_added_count > 0:
+            added_count = status.sources_added_count
+            log.info("source_added already True - keeping previous count=%d", added_count)
+        else:
+            add_result = client.add_sources(notebook_id, articles)
+            added_count = add_result.added
+            _update_status(
+                status_mgr,
+                status,
+                source_added=added_count > 0,
+                sources_added_count=added_count,
+                last_step="source_added" if added_count > 0 else "source_add_failed",
+            )
+            if added_count <= 0:
+                _append_error(status, "failed: no sources added")
+                _update_status(status_mgr, status, last_step="source_add_failed")
+                raise RuntimeError("No sources were added to NotebookLM (all URLs failed to resolve or were rejected)")
+
+        should_generate = added_count >= config.MIN_SOURCES_TO_GENERATE
+        if not should_generate:
+            log.warning(
+                "Skipping NotebookLM generation: only %d sources added (minimum %d)",
+                added_count,
+                config.MIN_SOURCES_TO_GENERATE,
+            )
+            _append_error(
+                status,
+                f"generation skipped: only {added_count} sources added (<{config.MIN_SOURCES_TO_GENERATE})",
+            )
+            _update_status(
+                status_mgr,
+                status,
+                generation_requested=False,
+                notebooklm_generated=False,
+                last_step="generation_skipped_low_sources",
+            )
+            nlm_result = None
+        else:
+            if not status.generation_requested:
+                gen_result = client.trigger_generation(notebook_id, audio=True, video=True)
+                _pipeline_state["gen_result"] = gen_result
+                for message in _collect_generation_errors(gen_result):
+                    _append_error(status, message)
+                _update_status(
+                    status_mgr,
+                    status,
+                    generation_requested=bool(gen_result.audio_task_id or gen_result.video_task_id),
+                    last_step="generation_requested"
+                    if (gen_result.audio_task_id or gen_result.video_task_id)
+                    else "generation_trigger_skipped",
+                )
+            else:
+                gen_result = _pipeline_state.get("gen_result")
+
+            log.info("Waiting for generation completion (max %ds)...", config.NOTEBOOKLM_MAX_WAIT)
+            nlm_result = poll_until_ready(
+                client, notebook_id, gen_result=gen_result, need_audio=True, need_video=True
+            )
+            generated = nlm_result.audio_ready or nlm_result.video_ready
+            for message in _collect_generation_errors(nlm_result):
+                _append_error(status, message)
+            gen_updates: dict = {
+                "notebooklm_generated": generated,
+                "last_step": "generated" if generated else "generation_incomplete",
+            }
+            if not status.notebook_url:
+                gen_updates["notebook_url"] = f"https://notebooklm.google.com/notebook/{notebook_id}"
+            _update_status(status_mgr, status, **gen_updates)
+            _pipeline_state["nlm_result"] = nlm_result
+
+        if nlm_result is not None:
+            paths = step_download(nlm_result, date_str, client=client)
+            _update_status(
+                status_mgr,
+                status,
+                audio_downloaded=paths.get("audio") is not None,
+                video_downloaded=paths.get("video") is not None,
+                last_step="assets_downloaded",
+            )
+        else:
+            paths = _empty_asset_paths()
+            _update_status(
+                status_mgr,
+                status,
+                audio_downloaded=False,
+                video_downloaded=False,
+                last_step=status.last_step,
+            )
         _pipeline_state["paths"] = paths
 
-        # 4. Meta
         metadata = step_meta(articles, date_str, paths)
-        status.meta_generated = True
-        status_mgr.save(status)
+        if metadata is None:
+            _append_error(status, "metadata: skipped (gemini_api_key_missing_or_invalid_or_request_failed)")
+            _update_status(
+                status_mgr,
+                status,
+                meta_generated=False,
+                last_step="meta_skipped",
+            )
+        else:
+            _update_status(status_mgr, status, meta_generated=True, last_step="meta_generated")
         _pipeline_state["metadata"] = metadata
 
     except Exception as exc:
         tb = traceback.format_exc()
         log.error("Morning pipeline error: %s\n%s", exc, tb)
-        status.error_log = f"morning: {exc}"
-        status_mgr.save(status)
+        _append_error(status, f"morning: {exc}")
+        _update_status(status_mgr, status, last_step="morning_failed")
         _notify_error(f"Morning pipeline failed: {exc}")
         return
 
-    # 5. Discord morning (targeted at 07:00 but run immediately in --now mode)
     _run_discord_morning(date_str, status, status_mgr)
-
     log.info("====== Morning pipeline complete ======")
 
 
@@ -225,23 +364,21 @@ def _run_discord_morning(date_str: str, status: DailyStatus, status_mgr) -> None
     paths = _pipeline_state.get("paths", {})
     try:
         ok = step_discord_morning(articles, paths, date_str)
-        status.discord_morning = ok
-        status_mgr.save(status)
+        _update_status(status_mgr, status, discord_morning=ok, last_step="discord_morning")
     except Exception as exc:
         log.error("Discord morning post error: %s", exc)
-        status.error_log += f" | discord_morning: {exc}"
-        status_mgr.save(status)
+        _append_error(status, f"discord_morning: {exc}")
+        _update_status(status_mgr, status, last_step="discord_morning_failed")
 
 
 def run_evening_pipeline() -> None:
-    """Runs at 19:00: youtube upload → discord night notification."""
+    """Run the evening pipeline."""
     date_str = today_str()
     log.info("====== Evening pipeline start (%s) ======", date_str)
 
     status_mgr = get_status_manager()
     status = status_mgr.get(date_str)
 
-    # Load from saved metadata if state was lost (e.g. process restart)
     if "metadata" not in _pipeline_state:
         _restore_state(date_str)
 
@@ -250,19 +387,24 @@ def run_evening_pipeline() -> None:
     metadata = _pipeline_state.get("metadata")
 
     if metadata is None:
-        log.error("No metadata available – cannot proceed with evening pipeline")
+        log.error("No metadata available - cannot proceed with evening pipeline")
+        _append_error(status, "evening: metadata_missing")
+        _update_status(status_mgr, status, last_step="evening_skipped_no_metadata")
         return
 
     try:
         youtube_url = step_youtube(paths, metadata, date_str)
-        status.youtube_uploaded = youtube_url is not None
+        changes = {
+            "youtube_uploaded": youtube_url is not None,
+            "last_step": "youtube_uploaded" if youtube_url else "youtube_missing",
+        }
         if youtube_url:
-            status.youtube_url = youtube_url
-        status_mgr.save(status)
+            changes["youtube_url"] = youtube_url
+        _update_status(status_mgr, status, **changes)
     except Exception as exc:
         log.error("YouTube upload error: %s", exc)
-        status.error_log += f" | youtube: {exc}"
-        status_mgr.save(status)
+        _append_error(status, f"youtube: {exc}")
+        _update_status(status_mgr, status, last_step="youtube_failed")
         _notify_error(f"YouTube upload failed: {exc}")
         youtube_url = None
 
@@ -272,18 +414,17 @@ def run_evening_pipeline() -> None:
     if youtube_url:
         try:
             ok = step_discord_night(youtube_url, metadata, articles, date_str)
-            status.discord_notified = ok
-            status_mgr.save(status)
+            _update_status(status_mgr, status, discord_notified=ok, last_step="discord_night")
         except Exception as exc:
             log.error("Discord night notification error: %s", exc)
-            status.error_log += f" | discord_night: {exc}"
-            status_mgr.save(status)
+            _append_error(status, f"discord_night: {exc}")
+            _update_status(status_mgr, status, last_step="discord_night_failed")
 
     log.info("====== Evening pipeline complete ======")
 
 
 def _restore_state(date_str: str) -> None:
-    """Restore pipeline state from saved metadata.json and article list."""
+    """Restore state from saved metadata.json and status-backed articles."""
     out_dir = output_dir(date_str)
     meta_file = out_dir / "metadata.json"
     if meta_file.exists():
@@ -302,14 +443,18 @@ def _restore_state(date_str: str) -> None:
         }
         log.info("Restored state from %s", meta_file)
 
+    status_mgr = get_status_manager()
+    _pipeline_state["articles"] = status_mgr.load_articles(date_str)
+
 
 def _notify_error(message: str) -> None:
     try:
         import httpx
+
         if config.DISCORD_WEBHOOK_URL:
             httpx.post(
                 config.DISCORD_WEBHOOK_URL,
-                json={"content": f"❌ **DailyCatchUp Error**\n{message}"},
+                json={"content": f"**DailyCatchUp Error**\n{message}"},
                 timeout=10,
             )
     except Exception:
@@ -333,15 +478,11 @@ def run_daemon() -> None:
 
 
 def run_now() -> None:
-    """Run the full pipeline immediately (for manual testing)."""
+    """Run the full pipeline immediately."""
     log.info("Running full pipeline NOW (test mode)")
     run_morning_pipeline()
     run_evening_pipeline()
 
-
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="DailyCatchUp pipeline runner")
@@ -363,23 +504,28 @@ if __name__ == "__main__":
             print(f"Collected {len(articles)} articles")
         elif args.step == "discord-morning":
             _restore_state(date_str)
-            articles = _pipeline_state.get("articles", [])
-            paths = _pipeline_state.get("paths", {})
-            step_discord_morning(articles, paths, date_str)
+            step_discord_morning(
+                _pipeline_state.get("articles", []),
+                _pipeline_state.get("paths", {}),
+                date_str,
+            )
         elif args.step == "youtube":
             _restore_state(date_str)
             metadata = _pipeline_state.get("metadata")
-            paths = _pipeline_state.get("paths", {})
             if metadata:
-                url = step_youtube(paths, metadata, date_str)
+                url = step_youtube(_pipeline_state.get("paths", {}), metadata, date_str)
                 print(f"YouTube URL: {url}")
         elif args.step == "discord-night":
             _restore_state(date_str)
             metadata = _pipeline_state.get("metadata")
-            articles = _pipeline_state.get("articles", [])
             status = get_status_manager().get(date_str)
             if metadata and status.youtube_url:
-                step_discord_night(status.youtube_url, metadata, articles, date_str)
+                step_discord_night(
+                    status.youtube_url,
+                    metadata,
+                    _pipeline_state.get("articles", []),
+                    date_str,
+                )
         else:
             log.error("Step '%s' requires full pipeline context. Use --now instead.", args.step)
             sys.exit(1)

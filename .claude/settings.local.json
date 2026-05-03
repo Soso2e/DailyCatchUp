@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(python -c \"import sys; sys.path.insert\\(0, 'C:/dummy_nonexistent'\\); import importlib.util; spec = importlib.util.find_spec\\('notebooklm'\\); print\\(spec\\)\")",
+      "Bash(pip show *)",
+      "Bash(python -c \"import site; print\\(site.getsitepackages\\(\\)\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"import sys; sys.path = [p for p in sys.path if 'DailyCatchUp' not in p]; import notebooklm; print\\(notebooklm.__file__\\)\")",
+      "Bash(git mv *)",
+      "Bash(python -c ' *)"
+    ]
+  }
+}
