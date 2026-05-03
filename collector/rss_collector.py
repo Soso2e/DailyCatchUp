@@ -1,9 +1,12 @@
 """RSS news collector for Japanese and English AI/game media."""
 
 import calendar
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from html import unescape
 from typing import List
+from urllib.parse import unquote, urlparse
 
 import feedparser
 
@@ -23,12 +26,16 @@ RSS_FEEDS: dict[str, tuple[str, str]] = {
         "ja",
     ),
     "google_news_en_ai": (
-        "https://news.google.com/rss/search?q=artificial+intelligence+generative&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=(AI+OR+%22artificial+intelligence%22+OR+%22machine+learning%22+OR+LLM+OR+%22generative+AI%22)&hl=en-US&gl=US&ceid=US:en",
         "en",
     ),
     "google_news_en_game": (
-        "https://news.google.com/rss/search?q=gaming+industry+release&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=(gaming+industry+OR+game+release)+AI&hl=en-US&gl=US&ceid=US:en",
         "en",
+    ),
+    "google_news_ja_ai_global": (
+        "https://news.google.com/rss/search?q=(生成AI+OR+人工知能+OR+機械学習+OR+LLM)&hl=ja&gl=JP&ceid=JP:ja",
+        "ja",
     ),
     # --- ゲーム専門メディア ---
     "4gamer": ("https://www.4gamer.net/rss/index.xml", "ja"),
@@ -59,6 +66,10 @@ RSS_FEEDS: dict[str, tuple[str, str]] = {
     "line_engineering": ("https://engineering.linecorp.com/feed", "ja"),
 }
 
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+_HREF_RE = re.compile(r'href=["\'](?P<url>https?://[^"\']+)["\']', re.IGNORECASE)
+_URL_QUERY_KEYS = ("url", "u", "q", "target", "dest", "destination", "redirect", "redirect_url")
+
 
 @dataclass
 class Article:
@@ -68,6 +79,8 @@ class Article:
     source: str
     language: str
     summary: str = ""
+    original_url_candidates: list[str] = field(default_factory=list, compare=False)
+    text_excerpt: str = field(default="", compare=False)
     score: float = field(default=0.0, compare=False)
     popularity: int = field(default=0, compare=False)  # likes / bookmarks / HN score
 
@@ -83,6 +96,110 @@ def _parse_popularity(entry) -> int:
             except (ValueError, TypeError):
                 pass
     return 0
+
+
+def _strip_html(text: str) -> str:
+    text = unescape(_HTML_TAG_RE.sub(" ", text or ""))
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _extract_urls_from_text(text: str) -> list[str]:
+    urls: list[str] = []
+    for match in _HREF_RE.finditer(text or ""):
+        urls.append(match.group("url"))
+
+    lowered = (text or "").lower()
+    for key in _URL_QUERY_KEYS:
+        marker = f"{key}="
+        start = 0
+        while True:
+            idx = lowered.find(marker, start)
+            if idx < 0:
+                break
+            value = text[idx + len(marker):]
+            for sep in ("&amp;", "&", '"', "'", " ", "<", ">"):
+                if sep in value:
+                    value = value.split(sep, 1)[0]
+            candidate = unquote(unescape(value).strip())
+            if candidate.startswith(("http://", "https://")):
+                urls.append(candidate)
+            start = idx + len(marker)
+    return urls
+
+
+def _is_google_news_url(url: str) -> bool:
+    return (urlparse(url).hostname or "").lower() == "news.google.com"
+
+
+def _collect_original_url_candidates(entry) -> list[str]:
+    candidates: list[str] = []
+
+    for key in ("feedburner_origlink", "origlink"):
+        value = (entry.get(key) or "").strip()
+        if value:
+            candidates.append(value)
+
+    source = entry.get("source")
+    if isinstance(source, dict):
+        href = (source.get("href") or "").strip()
+        if href:
+            candidates.append(href)
+
+    for link_item in entry.get("links", []) or []:
+        if not isinstance(link_item, dict):
+            continue
+        href = (link_item.get("href") or "").strip()
+        if href:
+            candidates.append(href)
+
+    for field_name in ("summary", "description", "title_detail", "summary_detail"):
+        value = entry.get(field_name)
+        if isinstance(value, dict):
+            value = value.get("value") or value.get("base") or ""
+        if isinstance(value, str) and value:
+            candidates.extend(_extract_urls_from_text(value))
+
+    for content_item in entry.get("content", []) or []:
+        if not isinstance(content_item, dict):
+            continue
+        value = content_item.get("value") or ""
+        if value:
+            candidates.extend(_extract_urls_from_text(value))
+
+    unique: list[str] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        normalized = candidate.strip()
+        if (
+            not normalized
+            or not normalized.startswith(("http://", "https://"))
+            or _is_google_news_url(normalized)
+            or normalized in seen
+        ):
+            continue
+        seen.add(normalized)
+        unique.append(normalized)
+    return unique
+
+
+def _build_text_excerpt(entry) -> str:
+    parts: list[str] = []
+
+    summary = entry.get("summary") or entry.get("description") or ""
+    if isinstance(summary, str) and summary:
+        parts.append(_strip_html(summary))
+
+    for content_item in entry.get("content", []) or []:
+        if not isinstance(content_item, dict):
+            continue
+        value = (content_item.get("value") or "").strip()
+        if value:
+            parts.append(_strip_html(value))
+
+    merged = " ".join(part for part in parts if part).strip()
+    if len(merged) > 800:
+        return merged[:797].rstrip() + "..."
+    return merged
 
 
 def collect_rss(max_age_hours: int = 24) -> List[Article]:
@@ -121,6 +238,8 @@ def collect_rss(max_age_hours: int = 24) -> List[Article]:
                         source=source_name,
                         language=lang,
                         summary=entry.get("summary", ""),
+                        original_url_candidates=_collect_original_url_candidates(entry),
+                        text_excerpt=_build_text_excerpt(entry),
                         popularity=_parse_popularity(entry),
                     )
                 )

@@ -1,12 +1,14 @@
-"""Generate YouTube metadata (title, description, tags, thumbnail text) using Gemini API."""
+"""Generate YouTube metadata using Gemini API."""
 
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from typing import List
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 import config
 from collector.rss_collector import Article
@@ -44,56 +46,77 @@ class VideoMetadata:
     thumbnail_subtext: str
 
 
-def generate_metadata(articles: List[Article], date_str: str) -> VideoMetadata:
+def _gemini_key_state() -> tuple[bool, str | None]:
+    api_key = config.GEMINI_API_KEY.strip()
+    if not api_key:
+        return False, "gemini_api_key_missing"
+    if "your_" in api_key.lower():
+        return False, "gemini_api_key_placeholder"
+    return True, None
+
+
+def generate_metadata(articles: List[Article], date_str: str) -> VideoMetadata | None:
+    key_ok, skip_reason = _gemini_key_state()
+    if not key_ok:
+        log.warning("Skipping metadata generation: %s", skip_reason)
+        return None
+
     article_lines = "\n".join(
         f"{i + 1}. [{a.language.upper()}] {a.title}\n   Source: {a.source}\n   URL: {a.url}"
         for i, a in enumerate(articles)
     )
 
-    genai.configure(api_key=config.GEMINI_API_KEY)
-    model = genai.GenerativeModel(
-        model_name=config.GEMINI_MODEL,
-        system_instruction=SYSTEM_PROMPT,
-    )
+    try:
+        client = genai.Client(api_key=config.GEMINI_API_KEY)
+        log.info("Calling Gemini API for metadata generation (model=%s)", config.GEMINI_MODEL)
+        response = client.models.generate_content(
+            model=config.GEMINI_MODEL,
+            contents=USER_PROMPT_TEMPLATE.format(date=date_str, articles=article_lines),
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                max_output_tokens=1024,
+            ),
+        )
+    except Exception as exc:
+        message = str(exc)
+        if "API_KEY_INVALID" in message or "API key not valid" in message:
+            log.warning("Skipping metadata generation: gemini_api_key_invalid (%s)", exc)
+        else:
+            log.warning("Skipping metadata generation: gemini_request_failed (%s)", exc)
+        return None
 
-    log.info("Calling Gemini API for metadata generation (model=%s)", config.GEMINI_MODEL)
+    raw = (response.text or "").strip()
+    if not raw:
+        log.warning("Skipping metadata generation: gemini_empty_response")
+        return None
 
-    response = model.generate_content(
-        USER_PROMPT_TEMPLATE.format(date=date_str, articles=article_lines),
-        generation_config=genai.types.GenerationConfig(max_output_tokens=1024),
-    )
-
-    raw = response.text.strip()
     log.debug("Gemini response: %s", raw[:200])
 
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
-        # Try to extract JSON block if model wrapped it
-        import re
-
         match = re.search(r"\{.*\}", raw, re.DOTALL)
         if match:
             data = json.loads(match.group())
         else:
-            log.error("Could not parse Gemini response as JSON: %s", raw)
+            log.error("Could not parse Gemini response as JSON: %s", raw[:500])
             data = _fallback_metadata(articles, date_str)
 
     return VideoMetadata(
         title=data.get("title", f"AI・ゲームニュース {date_str}"),
         description=data.get("description", ""),
         tags=data.get("tags", []),
-        thumbnail_headline=data.get("thumbnail_headline", "今日のAI・ゲームニュース"),
+        thumbnail_headline=data.get("thumbnail_headline", "今日のAI・ゲーム"),
         thumbnail_subtext=data.get("thumbnail_subtext", ""),
     )
 
 
 def _fallback_metadata(articles: List[Article], date_str: str) -> dict:
-    titles = "・".join(a.title[:20] for a in articles[:3])
+    titles = " / ".join(a.title[:20] for a in articles[:3])
     return {
-        "title": f"【{date_str}】AI・ゲーム最新ニュース",
-        "description": f"本日のAI・ゲーム業界ニュースまとめです。\n{titles}\n#AIニュース #ゲームニュース",
+        "title": f"[{date_str}] AI・ゲーム最新ニュース",
+        "description": f"本日のAI・ゲーム関連ニュースをまとめています。\n{titles}\n#AIニュース #ゲームニュース",
         "tags": ["AIニュース", "ゲームニュース", "AI", "gaming", "daily news"],
-        "thumbnail_headline": "今日のAI・ゲームニュース",
+        "thumbnail_headline": "今日のAI・ゲーム",
         "thumbnail_subtext": date_str,
     }
