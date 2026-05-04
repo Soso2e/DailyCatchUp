@@ -2,7 +2,7 @@ $pythonExe = "C:\Users\So2e\AppData\Local\Programs\Python\Python313\python.exe"
 $workDir   = "C:\#Project\Server\DailyCatchUp"
 
 # Morning (06:00) - 朝のパイプライン
-$actionM  = New-ScheduledTaskAction -Execute $pythonExe -Argument "scheduler\runner.py --morning" -WorkingDirectory $workDir
+$actionM  = New-ScheduledTaskAction -Execute $pythonExe -Argument "-m scheduler.runner --morning" -WorkingDirectory $workDir
 $triggerM = New-ScheduledTaskTrigger -Daily -At "06:00"
 $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 3) -StartWhenAvailable
 
@@ -18,7 +18,7 @@ Register-ScheduledTask `
 Write-Host "Morning task registered: 06:00 daily" -ForegroundColor Green
 
 # Evening (19:00) - 夜のパイプライン
-$actionE  = New-ScheduledTaskAction -Execute $pythonExe -Argument "scheduler\runner.py --evening" -WorkingDirectory $workDir
+$actionE  = New-ScheduledTaskAction -Execute $pythonExe -Argument "-m scheduler.runner --evening" -WorkingDirectory $workDir
 $triggerE = New-ScheduledTaskTrigger -Daily -At "19:00"
 $settings2 = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 2) -StartWhenAvailable
 
