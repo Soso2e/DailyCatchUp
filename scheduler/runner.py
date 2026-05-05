@@ -197,13 +197,24 @@ def step_discord_night(
 _pipeline_state: dict = {}
 
 
-def run_morning_pipeline() -> None:
-    """Run the morning pipeline with resumable status updates."""
-    date_str = today_str()
+def run_morning_pipeline(date_str: str | None = None, skip_nlm: bool = False) -> None:
+    """Run the morning pipeline with resumable status updates.
+
+    Args:
+        date_str: Target date (YYYY-MM-DD). Defaults to today.
+        skip_nlm: If True, skip NotebookLM steps and post to Discord
+                  using already-downloaded assets from output_dir.
+    """
+    date_str = date_str or today_str()
     log.info("====== Morning pipeline start (%s) ======", date_str)
 
     status_mgr = get_status_manager()
     status = status_mgr.get(date_str)
+
+    if skip_nlm:
+        _run_morning_discord_only(date_str, status, status_mgr)
+        log.info("====== Morning pipeline complete (skip-nlm mode) ======")
+        return
 
     try:
         _update_status(status_mgr, status, last_step="starting")
@@ -388,6 +399,15 @@ def run_morning_pipeline() -> None:
     log.info("====== Morning pipeline complete ======")
 
 
+def _run_morning_discord_only(date_str: str, status: DailyStatus, status_mgr) -> None:
+    """Restore state from disk and post the morning Discord message only."""
+    log.info("skip-nlm mode: loading saved articles and assets for %s", date_str)
+    _restore_state(date_str)
+    if not _pipeline_state.get("articles"):
+        log.warning("No cached articles found for %s – morning post will have no article list", date_str)
+    _run_discord_morning(date_str, status, status_mgr)
+
+
 def _run_discord_morning(date_str: str, status: DailyStatus, status_mgr) -> None:
     articles = _pipeline_state.get("articles", [])
     paths = _pipeline_state.get("paths", {})
@@ -535,21 +555,32 @@ def run_now() -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="DailyCatchUp pipeline runner")
     parser.add_argument("--now", action="store_true", help="Run full pipeline immediately")
-    parser.add_argument("--morning", action="store_true", help="Run morning pipeline (for Task Scheduler)")
-    parser.add_argument("--evening", action="store_true", help="Run evening pipeline (for Task Scheduler)")
+    parser.add_argument("--morning", action="store_true", help="Run morning pipeline manually")
+    parser.add_argument("--evening", action="store_true", help="Run evening pipeline manually")
     parser.add_argument(
         "--step",
         choices=["collect", "notebooklm", "download", "meta", "discord-morning", "youtube", "discord-night"],
         help="Run a single pipeline step",
     )
+    parser.add_argument(
+        "--date",
+        default=None,
+        metavar="YYYY-MM-DD",
+        help="Target date for manual runs (default: today)",
+    )
+    parser.add_argument(
+        "--skip-nlm",
+        action="store_true",
+        help="Skip NotebookLM steps; post to Discord using already-downloaded assets",
+    )
     args = parser.parse_args()
 
-    date_str = today_str()
+    date_str = args.date or today_str()
 
     if args.now:
         run_now()
     elif args.morning:
-        run_morning_pipeline()
+        run_morning_pipeline(date_str=date_str, skip_nlm=args.skip_nlm)
     elif args.evening:
         run_evening_pipeline()
     elif args.step:
