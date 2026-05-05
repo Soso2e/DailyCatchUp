@@ -27,6 +27,7 @@ from meta.thumbnail import generate_thumbnail
 from notion.status_manager import DailyStatus, get_status_manager
 from nlm.client import NotebookLMAuthError, NotebookLMClient
 from nlm.poller import poll_until_ready
+from nlm.session_manager import SessionExpiredError, ensure_valid_session
 from youtube.uploader import upload_video
 
 log = get_logger(__name__)
@@ -206,6 +207,15 @@ def run_morning_pipeline() -> None:
 
     try:
         _update_status(status_mgr, status, last_step="starting")
+
+        try:
+            ensure_valid_session()
+        except SessionExpiredError as exc:
+            log.error("NotebookLM session expired and auto-refresh failed: %s", exc)
+            _append_error(status, f"auth: {exc}")
+            _update_status(status_mgr, status, last_step="auth_failed")
+            _notify_auth_required()
+            return
 
         if status.news_collected:
             log.info("news_collected already True - loading cached articles")
