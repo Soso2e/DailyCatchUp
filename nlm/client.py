@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List
@@ -13,6 +14,42 @@ from logger import get_logger
 from nlm.url_resolver import resolve_url
 
 log = get_logger(__name__)
+
+
+class NotebookLMAuthError(RuntimeError):
+    """Raised when NotebookLM authentication fails or the session has expired."""
+
+
+def _is_auth_error(exc: Exception) -> bool:
+    try:
+        from notebooklm.exceptions import AuthError as _NLMAuthError
+        if isinstance(exc, _NLMAuthError):
+            return True
+    except ImportError:
+        pass
+    if isinstance(exc, FileNotFoundError):
+        return True
+    if isinstance(exc, ValueError):
+        msg = str(exc).lower()
+        return "notebooklm login" in msg or "authentication" in msg or "cookie" in msg
+    return False
+
+
+@asynccontextmanager
+async def _open_client():
+    """Open a NotebookLMClient, converting auth errors to NotebookLMAuthError."""
+    from notebooklm import NotebookLMClient as _Lib  # type: ignore
+    try:
+        async with await _Lib.from_storage() as c:
+            yield c
+    except Exception as exc:
+        if _is_auth_error(exc):
+            raise NotebookLMAuthError(
+                "NotebookLM session has expired or is missing.\n"
+                "Run:  python scripts/save_session.py\n"
+                f"(original error: {exc})"
+            ) from exc
+        raise
 
 NOTEBOOKLM_URL = "https://notebooklm.google.com"
 
@@ -72,11 +109,22 @@ class NotebookLMClient:
     def _run(coro):
         return asyncio.run(coro)
 
+    def check_auth(self) -> bool:
+        """Return True if the stored session is valid, False otherwise."""
+        async def _inner():
+            from notebooklm.auth import AuthTokens
+            try:
+                await AuthTokens.from_storage()
+                return True
+            except Exception as exc:
+                if _is_auth_error(exc):
+                    return False
+                raise
+        return self._run(_inner())
+
     def create_notebook(self, title: str) -> GenerationResult:
         async def _inner():
-            from notebooklm import NotebookLMClient as _Lib  # type: ignore
-
-            async with await _Lib.from_storage() as c:
+            async with _open_client() as c:
                 nb = await c.notebooks.create(title)
                 log.info("Created notebook id=%s", nb.id)
                 return GenerationResult(notebook_id=str(nb.id))
@@ -85,9 +133,7 @@ class NotebookLMClient:
 
     def add_sources(self, notebook_id: str, articles: List[Article]) -> AddSourcesResult:
         async def _inner():
-            from notebooklm import NotebookLMClient as _Lib  # type: ignore
-
-            async with await _Lib.from_storage() as c:
+            async with _open_client() as c:
                 stats = AddSourcesResult(total=len(articles))
                 for article in articles:
                     resolution = resolve_url(
@@ -187,10 +233,8 @@ class NotebookLMClient:
         video: bool = True,
     ) -> GenerationResult:
         async def _inner():
-            from notebooklm import NotebookLMClient as _Lib  # type: ignore
-
             result = GenerationResult(notebook_id=notebook_id)
-            async with await _Lib.from_storage() as c:
+            async with _open_client() as c:
                 if audio:
                     try:
                         status = await c.artifacts.generate_audio(notebook_id, language="ja")
@@ -238,9 +282,7 @@ class NotebookLMClient:
         timeout = float(max_wait or config.NOTEBOOKLM_MAX_WAIT)
 
         async def _inner():
-            from notebooklm import NotebookLMClient as _Lib  # type: ignore
-
-            async with await _Lib.from_storage() as c:
+            async with _open_client() as c:
                 if result.audio_task_id:
                     try:
                         log.info(
@@ -318,9 +360,7 @@ class NotebookLMClient:
         paths: dict[str, Path | None] = {"audio": None, "video": None, "summary": None}
 
         async def _inner():
-            from notebooklm import NotebookLMClient as _Lib  # type: ignore
-
-            async with await _Lib.from_storage() as c:
+            async with _open_client() as c:
                 if audio:
                     audio_path = output_dir / "audio.mp3"
                     try:

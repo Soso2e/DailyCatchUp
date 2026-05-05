@@ -25,7 +25,7 @@ from logger import get_logger
 from meta.meta_generator import VideoMetadata, generate_metadata
 from meta.thumbnail import generate_thumbnail
 from notion.status_manager import DailyStatus, get_status_manager
-from nlm.client import NotebookLMClient
+from nlm.client import NotebookLMAuthError, NotebookLMClient
 from nlm.poller import poll_until_ready
 from youtube.uploader import upload_video
 
@@ -360,6 +360,12 @@ def run_morning_pipeline() -> None:
             _update_status(status_mgr, status, meta_generated=True, last_step="meta_generated")
         _pipeline_state["metadata"] = metadata
 
+    except NotebookLMAuthError as exc:
+        log.error("NotebookLM authentication failed: %s", exc)
+        _append_error(status, f"auth: {exc}")
+        _update_status(status_mgr, status, last_step="auth_failed")
+        _notify_auth_required()
+        return
     except Exception as exc:
         tb = traceback.format_exc()
         log.error("Morning pipeline error: %s\n%s", exc, tb)
@@ -468,6 +474,25 @@ def _notify_error(message: str) -> None:
             httpx.post(
                 config.DISCORD_WEBHOOK_URL,
                 json={"content": f"**DailyCatchUp Error**\n{message}"},
+                timeout=10,
+            )
+    except Exception:
+        pass
+
+
+def _notify_auth_required() -> None:
+    message = (
+        "**DailyCatchUp** NotebookLM の認証セッションが期限切れです。\n"
+        "次のコマンドでセッションを更新してください:\n"
+        "```\npython scripts/save_session.py\n```"
+    )
+    try:
+        import httpx
+
+        if config.DISCORD_WEBHOOK_URL:
+            httpx.post(
+                config.DISCORD_WEBHOOK_URL,
+                json={"content": message},
                 timeout=10,
             )
     except Exception:
