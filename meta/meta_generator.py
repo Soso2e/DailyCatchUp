@@ -92,14 +92,23 @@ def generate_metadata(articles: List[Article], date_str: str) -> VideoMetadata |
 
     log.debug("Gemini response: %s", raw[:200])
 
+    # Strip Markdown code fences (```json ... ``` or ``` ... ```)
+    cleaned = re.sub(r"^```(?:json)?\s*\n?", "", raw, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\n?```\s*$", "", cleaned).strip()
+
+    data = None
     try:
-        data = json.loads(raw)
+        data = json.loads(cleaned)
     except json.JSONDecodeError:
-        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        match = re.search(r"\{.*\}", cleaned, re.DOTALL)
         if match:
-            data = json.loads(match.group())
-        else:
-            log.error("Could not parse Gemini response as JSON: %s", raw[:500])
+            try:
+                data = json.loads(match.group())
+            except json.JSONDecodeError:
+                pass
+        if data is None:
+            log.error("Could not parse Gemini response as JSON: %s", cleaned[:500])
+            _save_raw_gemini_response(cleaned, date_str)
             data = _fallback_metadata(articles, date_str)
 
     return VideoMetadata(
@@ -109,6 +118,19 @@ def generate_metadata(articles: List[Article], date_str: str) -> VideoMetadata |
         thumbnail_headline=data.get("thumbnail_headline", "今日のAI・ゲーム"),
         thumbnail_subtext=data.get("thumbnail_subtext", ""),
     )
+
+
+def _save_raw_gemini_response(raw: str, date_str: str) -> None:
+    try:
+        from pathlib import Path
+        import config as _cfg
+        out_dir = Path(_cfg.OUTPUTS_DIR) / date_str
+        out_dir.mkdir(parents=True, exist_ok=True)
+        dest = out_dir / "gemini_raw_response.txt"
+        dest.write_text(raw, encoding="utf-8")
+        log.info("Raw Gemini response saved to %s", dest)
+    except Exception as exc:
+        log.warning("Could not save raw Gemini response: %s", exc)
 
 
 def _fallback_metadata(articles: List[Article], date_str: str) -> dict:

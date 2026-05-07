@@ -14,6 +14,8 @@ from logger import get_logger
 
 log = get_logger(__name__)
 
+_DISCORD_MAX_BYTES = 25 * 1024 * 1024  # 25 MB
+
 
 def post_morning_news(
     audio_path: Path | None,
@@ -46,6 +48,23 @@ def post_morning_news(
     except Exception as exc:
         log.error("Discord embed post failed: %s", exc)
         success = False
+
+    # Attach audio file (skip or guide if too large)
+    if audio_path and audio_path.exists():
+        size_bytes = audio_path.stat().st_size
+        size_mb = size_bytes / 1_048_576
+        if size_bytes > _DISCORD_MAX_BYTES:
+            log.warning(
+                "Audio file %.1f MB exceeds Discord 25 MB limit – skipping file upload", size_mb
+            )
+            _post_text(
+                f"🎙️ **本日の音声ニュース** (ファイルサイズ {size_mb:.1f} MB が Discord の 25 MB 制限を超えています)\n"
+                "ボイスチャンネルで聞くには Bot コマンドをお使いください:\n"
+                "```\n/news play\n```\n"
+                "※ DailyCatchUp Bot が起動中で、あなたがボイスチャンネルに参加している場合のみ利用可能です。"
+            )
+        else:
+            success &= _upload_file(audio_path, content="🎙️ **本日の音声ニュース**")
 
     # Attach summary markdown file
     if summary_path and summary_path.exists():

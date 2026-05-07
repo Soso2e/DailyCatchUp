@@ -160,7 +160,7 @@ def step_youtube(paths: dict, metadata: VideoMetadata, date_str: str) -> str | N
     thumbnail_path = output_dir(date_str) / "thumbnail.png"
 
     if not video_path or not Path(video_path).exists():
-        log.error("No video file available for YouTube upload")
+        log.info("YouTube upload skipped – video file not yet available (video may still be generating)")
         return None
 
     url = upload_video(
@@ -443,6 +443,37 @@ def run_evening_pipeline() -> None:
         _update_status(status_mgr, status, last_step="evening_skipped_no_metadata")
         return
 
+    # If video was not downloaded in the morning, attempt re-download from existing notebook
+    video_path = paths.get("video")
+    if (not video_path or not Path(video_path).exists()) and status.notebook_id:
+        log.info(
+            "Video not yet downloaded – attempting re-download from notebook %s",
+            status.notebook_id,
+        )
+        try:
+            client = NotebookLMClient()
+            new_paths = client.download_assets(
+                status.notebook_id,
+                output_dir(date_str),
+                audio=False,
+                video=True,
+            )
+            if new_paths.get("video") and Path(new_paths["video"]).exists():
+                paths["video"] = new_paths["video"]
+                _pipeline_state["paths"] = paths
+                _update_status(
+                    status_mgr, status,
+                    video_downloaded=True,
+                    last_step="video_redownloaded",
+                )
+                log.info("Video re-download succeeded: %s", paths["video"])
+            else:
+                log.info("Video still not ready – YouTube upload will be skipped")
+        except NotebookLMAuthError as exc:
+            log.warning("Video re-download skipped (auth error): %s", exc)
+        except Exception as exc:
+            log.warning("Video re-download attempt failed: %s", exc)
+
     try:
         youtube_url = step_youtube(paths, metadata, date_str)
         changes = {
@@ -561,7 +592,11 @@ if __name__ == "__main__":
     parser.add_argument("--evening", action="store_true", help="Run evening pipeline manually")
     parser.add_argument(
         "--step",
-        choices=["collect", "notebooklm", "download", "meta", "discord-morning", "youtube", "discord-night"],
+        choices=[
+            "collect", "notebooklm", "download", "meta",
+            "discord-morning", "youtube", "discord-night",
+            "video-download",
+        ],
         help="Run a single pipeline step",
     )
     parser.add_argument(
@@ -613,6 +648,25 @@ if __name__ == "__main__":
                     _pipeline_state.get("articles", []),
                     date_str,
                 )
+        elif args.step == "video-download":
+            status_mgr = get_status_manager()
+            status = status_mgr.get(date_str)
+            if not status.notebook_id:
+                log.error("No notebook_id in status for %s – run morning pipeline first", date_str)
+                sys.exit(1)
+            log.info("Attempting video download from notebook %s", status.notebook_id)
+            client = NotebookLMClient()
+            new_paths = client.download_assets(
+                status.notebook_id,
+                output_dir(date_str),
+                audio=False,
+                video=True,
+            )
+            if new_paths.get("video") and Path(new_paths["video"]).exists():
+                _update_status(status_mgr, status, video_downloaded=True, last_step="video_redownloaded")
+                print(f"Video downloaded: {new_paths['video']}")
+            else:
+                print("Video not yet available – try again later or check NotebookLM directly")
         else:
             log.error("Step '%s' requires full pipeline context. Use --now instead.", args.step)
             sys.exit(1)
