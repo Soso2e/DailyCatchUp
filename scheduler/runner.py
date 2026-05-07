@@ -350,11 +350,13 @@ def run_morning_pipeline(date_str: str | None = None, skip_nlm: bool = False) ->
 
         if nlm_result is not None:
             paths = step_download(nlm_result, date_str, client=client)
+            audio_p = paths.get("audio")
             _update_status(
                 status_mgr,
                 status,
-                audio_downloaded=paths.get("audio") is not None,
+                audio_downloaded=audio_p is not None,
                 video_downloaded=paths.get("video") is not None,
+                audio_path=str(audio_p) if audio_p else "",
                 last_step="assets_downloaded",
             )
         else:

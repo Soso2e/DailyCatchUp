@@ -54,17 +54,6 @@ def post_morning_news(
             content="📄 **本日の要約テキスト**",
         )
 
-    # Attach audio file
-    if audio_path and audio_path.exists():
-        file_size_mb = audio_path.stat().st_size / 1_048_576
-        if file_size_mb > 25:
-            log.warning("Audio file %.1f MB exceeds Discord 25 MB limit – skipping file upload", file_size_mb)
-            _post_text(f"🔊 音声ファイルが大きすぎるためアップロードをスキップしました ({file_size_mb:.1f} MB)")
-        else:
-            success &= _upload_file(audio_path, content="🔊 **今日の音声ニュース**")
-    else:
-        log.warning("No audio file to upload for morning post")
-
     return success
 
 
