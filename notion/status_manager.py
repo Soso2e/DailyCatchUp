@@ -113,6 +113,7 @@ class DailyStatus:
     selected_article_count: int = 0
     last_step: str = ""
     youtube_url: str = ""
+    audio_path: str = ""
     error_log: str = ""
 
 
@@ -181,6 +182,7 @@ class NotionStatusManager:
             selected_article_count=number("selected_article_count"),
             last_step=txt("last_step"),
             youtube_url=url("youtube_url"),
+            audio_path=txt("audio_path"),
             error_log=txt("error_log"),
         )
 
@@ -219,6 +221,10 @@ class NotionStatusManager:
         if self._has_property("last_step"):
             props["last_step"] = {
                 "rich_text": [{"text": {"content": status.last_step[:2000]}}]
+            }
+        if self._has_property("audio_path"):
+            props["audio_path"] = {
+                "rich_text": [{"text": {"content": status.audio_path[:2000]}}]
             }
         if self._has_property("sources_added_count"):
             props["sources_added_count"] = {"number": status.sources_added_count}
@@ -296,7 +302,8 @@ class SQLiteStatusManager:
                     selected_article_count INTEGER DEFAULT 0,
                     last_step TEXT DEFAULT '',
                     youtube_url TEXT DEFAULT '',
-                    error_log TEXT DEFAULT ''
+                    error_log TEXT DEFAULT '',
+                    audio_path TEXT DEFAULT ''
                 )
                 """
             )
@@ -323,6 +330,7 @@ class SQLiteStatusManager:
             "sources_added_count": "INTEGER DEFAULT 0",
             "selected_article_count": "INTEGER DEFAULT 0",
             "last_step": "TEXT DEFAULT ''",
+            "audio_path": "TEXT DEFAULT ''",
         }
         for name, column_def in required_columns.items():
             if name not in existing:
@@ -355,6 +363,7 @@ class SQLiteStatusManager:
                 selected_article_count=int(row["selected_article_count"] or 0),
                 last_step=row["last_step"] or "",
                 youtube_url=row["youtube_url"] or "",
+                audio_path=row["audio_path"] or "",
                 error_log=row["error_log"] or "",
             )
 
@@ -368,7 +377,7 @@ class SQLiteStatusManager:
                     :audio_downloaded, :video_downloaded, :meta_generated,
                     :discord_morning, :youtube_uploaded, :discord_notified,
                     :notebook_id, :notebook_url, :sources_added_count, :selected_article_count,
-                    :last_step, :youtube_url, :error_log
+                    :last_step, :youtube_url, :error_log, :audio_path
                 )
                 ON CONFLICT(date) DO UPDATE SET
                     news_collected=excluded.news_collected,
@@ -388,7 +397,8 @@ class SQLiteStatusManager:
                     selected_article_count=excluded.selected_article_count,
                     last_step=excluded.last_step,
                     youtube_url=excluded.youtube_url,
-                    error_log=excluded.error_log
+                    error_log=excluded.error_log,
+                    audio_path=excluded.audio_path
                 """,
                 {
                     "date": status.date,
@@ -410,6 +420,7 @@ class SQLiteStatusManager:
                     "last_step": status.last_step,
                     "youtube_url": status.youtube_url,
                     "error_log": status.error_log,
+                    "audio_path": status.audio_path,
                 },
             )
         log.debug("SQLite status saved for %s", status.date)
