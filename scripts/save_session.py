@@ -14,7 +14,9 @@
 
 from __future__ import annotations
 
+import select
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -26,6 +28,23 @@ log = get_logger(__name__)
 
 NOTEBOOKLM_URL = "https://notebooklm.google.com"
 GOOGLE_ACCOUNTS_URL = "https://accounts.google.com/"
+
+
+def _wait_with_countdown(seconds: int) -> None:
+    """Wait up to *seconds* seconds, or until Enter is pressed."""
+    for remaining in range(seconds, 0, -1):
+        print(f"\r  あと {remaining} 秒...", end="", flush=True)
+        # select.select allows early exit by pressing Enter (TTY or pipe)
+        try:
+            ready, _, _ = select.select([sys.stdin], [], [], 1)
+            if ready:
+                sys.stdin.readline()
+                print("\r  Enter を検知しました。続行します。")
+                return
+        except (ValueError, OSError):
+            # stdin closed or not selectable (e.g. no TTY) — just sleep
+            time.sleep(1)
+    print("\r  自動で続行します。              ")
 
 
 def _manual_login() -> Path:
@@ -63,11 +82,9 @@ def _manual_login() -> Path:
         page.goto(NOTEBOOKLM_URL)
 
         print("ブラウザが開きました。")
-        print("  1. Google ログインを完了させてください")
-        print("  2. NotebookLM のホーム画面が表示されたことを確認してください")
-        print("  3. ここで Enter を押してセッションを保存してください")
+        print("  10秒後に自動でセッションを保存します（Enter で即時続行）")
         print()
-        input("準備ができたら Enter >>> ")
+        _wait_with_countdown(10)
 
         # Navigate to get .google.com cookies for regional users, then back.
         page.goto(GOOGLE_ACCOUNTS_URL, wait_until="load")
