@@ -27,7 +27,7 @@ from meta.thumbnail import generate_thumbnail
 from notion.status_manager import DailyStatus, get_status_manager
 from nlm.client import NotebookLMAuthError, NotebookLMClient
 from nlm.poller import poll_until_ready
-from nlm.session_manager import SessionExpiredError, ensure_valid_session
+from nlm.session_manager import SessionExpiredError, ensure_valid_session, manual_refresh_session, verify_session
 from youtube.uploader import upload_video
 
 log = get_logger(__name__)
@@ -222,11 +222,18 @@ def run_morning_pipeline(date_str: str | None = None, skip_nlm: bool = False) ->
         try:
             ensure_valid_session()
         except SessionExpiredError as exc:
-            log.error("NotebookLM session expired and auto-refresh failed: %s", exc)
-            _append_error(status, f"auth: {exc}")
-            _update_status(status_mgr, status, last_step="auth_failed")
-            _notify_auth_required()
-            return
+            log.warning("Headless session refresh failed (%s) — attempting GUI refresh...", exc)
+            try:
+                refreshed = manual_refresh_session()
+                if not verify_session(refreshed):
+                    raise SessionExpiredError("GUI refresh succeeded but verification still failed.")
+                log.info("Session refreshed via GUI browser — continuing pipeline")
+            except Exception as gui_exc:
+                log.error("GUI session refresh also failed: %s", gui_exc)
+                _append_error(status, f"auth: {gui_exc}")
+                _update_status(status_mgr, status, last_step="auth_failed")
+                _notify_auth_required()
+                return
 
         if status.news_collected:
             log.info("news_collected already True - loading cached articles")
