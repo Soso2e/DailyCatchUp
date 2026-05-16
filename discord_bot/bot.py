@@ -159,6 +159,7 @@ async def news_play(interaction: discord.Interaction, target_date: str | None = 
     vc_channel = member.voice.channel
     await interaction.response.defer()
 
+    vc: discord.VoiceClient | None = None
     try:
         loop = asyncio.get_running_loop()
 
@@ -184,6 +185,8 @@ async def news_play(interaction: discord.Interaction, target_date: str | None = 
         )
     except Exception as exc:
         log.error("VC play error: %s", exc, exc_info=True)
+        if vc and vc.is_connected():
+            await vc.disconnect()
         await interaction.followup.send(f"❌ 音声再生に失敗しました。\n```\n{exc}\n```")
 
 
