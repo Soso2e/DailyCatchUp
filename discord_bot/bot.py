@@ -160,12 +160,25 @@ async def news_play(interaction: discord.Interaction, target_date: str | None = 
     await interaction.response.defer()
 
     try:
-        vc = await vc_channel.connect()
+        loop = asyncio.get_running_loop()
+
+        vc = discord.utils.get(client.voice_clients, guild=interaction.guild)
+        if vc:
+            if vc.is_playing():
+                vc.stop()
+            if vc.channel != vc_channel:
+                await vc.move_to(vc_channel)
+        else:
+            vc = await vc_channel.connect()
+
         source = discord.FFmpegPCMAudio(str(audio_path))
-        vc.play(
-            source,
-            after=lambda e: client.loop.create_task(vc.disconnect()) if not e else None,
-        )
+
+        def after_play(error: Exception | None) -> None:
+            if error:
+                log.error("VC playback error: %s", error)
+            asyncio.run_coroutine_threadsafe(vc.disconnect(), loop)
+
+        vc.play(source, after=after_play)
         await interaction.followup.send(
             f"🔊 `{vc_channel.name}` で `{date_label}` の音声ニュースを再生中..."
         )
