@@ -183,8 +183,8 @@ async def news_play(interaction: discord.Interaction, target_date: str | None = 
             f"🔊 `{vc_channel.name}` で `{date_label}` の音声ニュースを再生中..."
         )
     except Exception as exc:
-        log.error("VC play error: %s", exc)
-        await interaction.followup.send("❌ 音声再生に失敗しました。")
+        log.error("VC play error: %s", exc, exc_info=True)
+        await interaction.followup.send(f"❌ 音声再生に失敗しました。\n```\n{exc}\n```")
 
 
 @news_group.command(name="collect", description="朝のデータ収集パイプラインを手動実行")
