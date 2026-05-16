@@ -1,17 +1,20 @@
 """Discord Bot with slash commands for on-demand news access.
 
 Commands:
-  /news today   – Show today's news summary
-  /news play    – Play today's audio in VC
-  /news summary – Show bullet-point summary
-  /news youtube – Show today's YouTube link
+  /news today          – Show today's news summary
+  /news play [date]    – Play audio in VC (today or a past date)
+  /news summary        – Show bullet-point summary
+  /news youtube        – Show today's YouTube link
+  /news collect [date] – Trigger morning data collection pipeline
 
 Run: python -m discord_bot.bot
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from pathlib import Path
 
@@ -24,22 +27,38 @@ from logger import get_logger
 log = get_logger(__name__)
 
 
+_pipeline_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="pipeline")
+
+
+def _date_dir(date_str: str | None = None) -> Path:
+    return Path(config.OUTPUTS_DIR) / (date_str or date.today().isoformat())
+
+
 def _today_dir() -> Path:
-    return Path(config.OUTPUTS_DIR) / date.today().isoformat()
+    return _date_dir()
 
 
-def _load_metadata() -> dict | None:
-    meta_file = _today_dir() / "metadata.json"
+def _load_metadata(date_str: str | None = None) -> dict | None:
+    meta_file = _date_dir(date_str) / "metadata.json"
     if meta_file.exists():
         return json.loads(meta_file.read_text(encoding="utf-8"))
     return None
 
 
-def _load_summary() -> str | None:
-    summary_file = _today_dir() / "summary.md"
+def _load_summary(date_str: str | None = None) -> str | None:
+    summary_file = _date_dir(date_str) / "summary.md"
     if summary_file.exists():
         return summary_file.read_text(encoding="utf-8")
     return None
+
+
+def _is_valid_date(date_str: str) -> bool:
+    try:
+        from datetime import datetime
+        datetime.strptime(date_str, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
 
 
 class NewsBot(discord.Client):
@@ -63,8 +82,8 @@ news_group = app_commands.Group(name="news", description="DailyCatchUp ニュー
 
 @news_group.command(name="today", description="今日のニュース要約を表示")
 async def news_today(interaction: discord.Interaction) -> None:
-    meta = _load_metadata()
-    summary = _load_summary()
+    meta = _load_metadata(None)
+    summary = _load_summary(None)
 
     if not meta and not summary:
         await interaction.response.send_message(
@@ -112,12 +131,21 @@ async def news_youtube(interaction: discord.Interaction) -> None:
     )
 
 
-@news_group.command(name="play", description="今日の音声ニュースをVCで再生")
-async def news_play(interaction: discord.Interaction) -> None:
-    audio_path = _today_dir() / "audio.mp3"
+@news_group.command(name="play", description="音声ニュースをVCで再生（日付省略時は今日）")
+@app_commands.describe(target_date="対象日付 YYYY-MM-DD（省略時は今日）")
+async def news_play(interaction: discord.Interaction, target_date: str | None = None) -> None:
+    if target_date is not None and not _is_valid_date(target_date):
+        await interaction.response.send_message(
+            "⚠️ 日付の形式が正しくありません。`YYYY-MM-DD` 形式で指定してください。", ephemeral=True
+        )
+        return
+
+    date_label = target_date or date.today().isoformat()
+    audio_path = _date_dir(target_date) / "audio.mp3"
+
     if not audio_path.exists():
         await interaction.response.send_message(
-            "⚠️ 今日の音声ファイルがまだ生成されていません。", ephemeral=True
+            f"⚠️ `{date_label}` の音声ファイルが見つかりません。", ephemeral=True
         )
         return
 
@@ -138,10 +166,49 @@ async def news_play(interaction: discord.Interaction) -> None:
             source,
             after=lambda e: client.loop.create_task(vc.disconnect()) if not e else None,
         )
-        await interaction.followup.send(f"🔊 `{vc_channel.name}` で音声ニュースを再生中...")
+        await interaction.followup.send(
+            f"🔊 `{vc_channel.name}` で `{date_label}` の音声ニュースを再生中..."
+        )
     except Exception as exc:
         log.error("VC play error: %s", exc)
         await interaction.followup.send("❌ 音声再生に失敗しました。")
+
+
+@news_group.command(name="collect", description="朝のデータ収集パイプラインを手動実行")
+@app_commands.describe(target_date="対象日付 YYYY-MM-DD（省略時は今日）", skip_nlm="NotebookLM をスキップして保存済みアセットをDiscordに投稿")
+async def news_collect(
+    interaction: discord.Interaction,
+    target_date: str | None = None,
+    skip_nlm: bool = False,
+) -> None:
+    if target_date is not None and not _is_valid_date(target_date):
+        await interaction.response.send_message(
+            "⚠️ 日付の形式が正しくありません。`YYYY-MM-DD` 形式で指定してください。", ephemeral=True
+        )
+        return
+
+    date_label = target_date or date.today().isoformat()
+    mode_label = "（NotebookLM スキップ）" if skip_nlm else ""
+    await interaction.response.send_message(
+        f"⏳ `{date_label}` の朝のデータ収集を開始します{mode_label}...\n"
+        "完了まで数分かかる場合があります。"
+    )
+
+    loop = asyncio.get_event_loop()
+
+    def _run_pipeline() -> str:
+        from scheduler.runner import run_morning_pipeline
+        run_morning_pipeline(date_str=target_date, skip_nlm=skip_nlm)
+        return "ok"
+
+    try:
+        await loop.run_in_executor(_pipeline_executor, _run_pipeline)
+        await interaction.followup.send(
+            f"✅ `{date_label}` のデータ収集が完了しました！\n`/news today` で確認できます。"
+        )
+    except Exception as exc:
+        log.error("Pipeline error from Discord command: %s", exc)
+        await interaction.followup.send(f"❌ パイプライン実行中にエラーが発生しました:\n```\n{exc}\n```")
 
 
 client.tree.add_command(news_group)
