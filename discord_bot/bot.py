@@ -13,9 +13,11 @@ Run: python -m discord_bot.bot
 from __future__ import annotations
 
 import asyncio
+import sys
 import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
+from importlib import metadata
 from pathlib import Path
 
 import discord
@@ -28,6 +30,11 @@ log = get_logger(__name__)
 
 
 _pipeline_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="pipeline")
+
+VOICE_CONNECT_RETRIES = 3
+VOICE_CONNECT_TIMEOUT = 25.0
+VOICE_CONNECTED_WAIT_SECONDS = 10.0
+VOICE_CONNECTED_STABLE_SECONDS = 1.5
 
 
 def _date_dir(date_str: str | None = None) -> Path:
@@ -61,6 +68,124 @@ def _is_valid_date(date_str: str) -> bool:
         return False
 
 
+def _package_version(package_name: str) -> str:
+    try:
+        return metadata.version(package_name)
+    except metadata.PackageNotFoundError:
+        return "not installed"
+
+
+async def _disconnect_existing_voice_client(guild: discord.Guild | None) -> None:
+    if guild is None:
+        return
+
+    existing = discord.utils.get(client.voice_clients, guild=guild)
+    if not existing:
+        return
+
+    log.info(
+        "Cleaning existing voice client before reconnect: guild=%s channel=%s "
+        "connected=%s playing=%s",
+        guild.id,
+        getattr(existing.channel, "id", None),
+        existing.is_connected(),
+        existing.is_playing(),
+    )
+    if existing.is_playing():
+        existing.stop()
+    await existing.disconnect(force=True)
+
+
+async def _wait_until_voice_connected(
+    vc: discord.VoiceClient,
+    *,
+    timeout: float = VOICE_CONNECTED_WAIT_SECONDS,
+    stable_for: float = VOICE_CONNECTED_STABLE_SECONDS,
+) -> bool:
+    deadline = asyncio.get_running_loop().time() + timeout
+    stable_since: float | None = None
+
+    while asyncio.get_running_loop().time() < deadline:
+        connected = vc.is_connected()
+        channel_id = getattr(vc.channel, "id", None)
+        log.debug(
+            "Voice connection probe: connected=%s channel=%s endpoint=%s",
+            connected,
+            channel_id,
+            getattr(vc, "endpoint", None),
+        )
+
+        if connected:
+            now = asyncio.get_running_loop().time()
+            stable_since = stable_since or now
+            if now - stable_since >= stable_for:
+                return True
+        else:
+            stable_since = None
+
+        await asyncio.sleep(0.25)
+
+    return False
+
+
+async def _connect_voice_channel(vc_channel: discord.abc.Connectable) -> discord.VoiceClient:
+    last_error: Exception | None = None
+
+    for attempt in range(1, VOICE_CONNECT_RETRIES + 1):
+        await _disconnect_existing_voice_client(getattr(vc_channel, "guild", None))
+        log.info(
+            "Connecting to voice channel: attempt=%s/%s channel=%s",
+            attempt,
+            VOICE_CONNECT_RETRIES,
+            getattr(vc_channel, "id", None),
+        )
+
+        vc: discord.VoiceClient | None = None
+        try:
+            vc = await vc_channel.connect(
+                timeout=VOICE_CONNECT_TIMEOUT,
+                reconnect=False,
+                self_deaf=True,
+            )
+            log.info(
+                "Voice connect returned: connected=%s channel=%s endpoint=%s",
+                vc.is_connected(),
+                getattr(vc.channel, "id", None),
+                getattr(vc, "endpoint", None),
+            )
+
+            if await _wait_until_voice_connected(vc):
+                await asyncio.sleep(0.5)
+                log.info(
+                    "Voice connection stabilized: connected=%s channel=%s playing=%s",
+                    vc.is_connected(),
+                    getattr(vc.channel, "id", None),
+                    vc.is_playing(),
+                )
+                if vc.is_connected():
+                    return vc
+
+            log.warning(
+                "Voice connection did not stabilize: attempt=%s connected=%s channel=%s",
+                attempt,
+                vc.is_connected(),
+                getattr(vc.channel, "id", None),
+            )
+            last_error = discord.errors.ClientException("VC接続が安定しませんでした。")
+        except Exception as exc:
+            last_error = exc
+            log.warning("Voice connect attempt failed: attempt=%s error=%s", attempt, exc, exc_info=True)
+        finally:
+            if vc and not vc.is_connected():
+                await vc.disconnect(force=True)
+
+        await asyncio.sleep(1.0 * attempt)
+
+    raise discord.errors.ClientException(
+        f"VC接続が確立できませんでした。再試行してください。last_error={last_error}"
+    )
+
+
 class NewsBot(discord.Client):
     def __init__(self) -> None:
         intents = discord.Intents.default()
@@ -74,6 +199,18 @@ class NewsBot(discord.Client):
 
     async def on_ready(self) -> None:
         log.info("Discord bot ready: %s (id=%s)", self.user, self.user.id)
+        if sys.version_info >= (3, 13):
+            log.warning(
+                "Python 3.13 detected. If Discord voice keeps failing, verify again "
+                "with Python 3.11 or 3.12 before deeper protocol debugging."
+            )
+        log.info(
+            "Runtime versions: python=%s discord.py=%s PyNaCl=%s davey=%s",
+            sys.version.split()[0],
+            _package_version("discord.py"),
+            _package_version("PyNaCl"),
+            _package_version("davey"),
+        )
 
 
 client = NewsBot()
@@ -157,30 +294,38 @@ async def news_play(interaction: discord.Interaction, target_date: str | None = 
         return
 
     vc_channel = member.voice.channel
+    bot_member = interaction.guild.me if interaction.guild else None
+    if bot_member is None:
+        await interaction.response.send_message(
+            "⚠️ Botのサーバー情報を取得できませんでした。", ephemeral=True
+        )
+        return
+
+    permissions = vc_channel.permissions_for(bot_member)
+    missing_permissions = [
+        label
+        for label, allowed in (
+            ("Connect", permissions.connect),
+            ("Speak", permissions.speak),
+            ("Use Voice Activity", permissions.use_voice_activation),
+        )
+        if not allowed
+    ]
+    if missing_permissions:
+        await interaction.response.send_message(
+            "⚠️ Botに必要なVC権限が不足しています: "
+            + ", ".join(missing_permissions),
+            ephemeral=True,
+        )
+        return
+
     await interaction.response.defer()
 
     vc: discord.VoiceClient | None = None
     try:
         loop = asyncio.get_running_loop()
 
-        # 既存のVCクライアントを確認し、切断済みなら強制削除してから再接続
-        existing = discord.utils.get(client.voice_clients, guild=interaction.guild)
-        if existing:
-            if not existing.is_connected():
-                await existing.disconnect(force=True)
-                existing = None
-
-        if existing:
-            if existing.is_playing():
-                existing.stop()
-            if existing.channel != vc_channel:
-                await existing.move_to(vc_channel)
-            vc = existing
-        else:
-            vc = await vc_channel.connect(reconnect=True, self_deaf=True)
-
-        if not vc.is_connected():
-            raise discord.errors.ClientException("VC接続が確立できませんでした。再試行してください。")
+        vc = await _connect_voice_channel(vc_channel)
 
         source = discord.FFmpegPCMAudio(str(audio_path))
 

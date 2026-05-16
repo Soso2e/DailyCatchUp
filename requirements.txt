@@ -25,8 +25,10 @@ google-auth-httplib2>=0.2.0
 google-auth-oauthlib>=1.2.0
 
 # Discord
-discord.py>=2.3.2
-PyNaCl>=1.5.0
+# Voice playback should be revalidated on Python 3.11 or 3.12 before Python 3.13.
+discord.py[voice]==2.7.1
+PyNaCl==1.5.0
+davey==0.1.5
 
 # Scheduler
 schedule>=1.2.2

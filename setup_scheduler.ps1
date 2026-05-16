@@ -1,5 +1,6 @@
-$pythonExe = "C:\Users\So2e\AppData\Local\Programs\Python\Python313\python.exe"
 $workDir   = "C:\#Project\Server\DailyCatchUp"
+$venvPython = Join-Path $workDir ".venv\Scripts\python.exe"
+$pythonExe = if (Test-Path $venvPython) { $venvPython } else { "python.exe" }
 
 # Morning (06:00) - 朝のパイプライン
 $actionM  = New-ScheduledTaskAction -Execute $pythonExe -Argument "-m scheduler.runner --morning" -WorkingDirectory $workDir
@@ -34,7 +35,7 @@ Register-ScheduledTask `
 Write-Host "Evening task registered: 19:00 daily" -ForegroundColor Green
 
 # Discord Bot - PC起動時に常駐起動
-$actionB  = New-ScheduledTaskAction -Execute $pythonExe -Argument "-m discord.bot" -WorkingDirectory $workDir
+$actionB  = New-ScheduledTaskAction -Execute $pythonExe -Argument "-m discord_bot.bot" -WorkingDirectory $workDir
 $triggerB = New-ScheduledTaskTrigger -AtLogOn
 $settings3 = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Days 365) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
 
