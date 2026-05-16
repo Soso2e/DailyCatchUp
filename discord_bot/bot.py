@@ -163,14 +163,24 @@ async def news_play(interaction: discord.Interaction, target_date: str | None = 
     try:
         loop = asyncio.get_running_loop()
 
-        vc = discord.utils.get(client.voice_clients, guild=interaction.guild)
-        if vc:
-            if vc.is_playing():
-                vc.stop()
-            if vc.channel != vc_channel:
-                await vc.move_to(vc_channel)
+        # 既存のVCクライアントを確認し、切断済みなら強制削除してから再接続
+        existing = discord.utils.get(client.voice_clients, guild=interaction.guild)
+        if existing:
+            if not existing.is_connected():
+                await existing.disconnect(force=True)
+                existing = None
+
+        if existing:
+            if existing.is_playing():
+                existing.stop()
+            if existing.channel != vc_channel:
+                await existing.move_to(vc_channel)
+            vc = existing
         else:
-            vc = await vc_channel.connect()
+            vc = await vc_channel.connect(reconnect=True, self_deaf=True)
+
+        if not vc.is_connected():
+            raise discord.errors.ClientException("VC接続が確立できませんでした。再試行してください。")
 
         source = discord.FFmpegPCMAudio(str(audio_path))
 
