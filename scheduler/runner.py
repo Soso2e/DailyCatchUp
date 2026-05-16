@@ -18,8 +18,8 @@ from collector.hackernews_collector import collect_hackernews
 from collector.newsapi_collector import collect_newsapi
 from collector.qiita_collector import collect_qiita
 from collector.rss_collector import Article, collect_rss
-from discord.morning_post import post_morning_news
-from discord.night_notify import notify_youtube_uploaded
+from discord_bot.morning_post import post_morning_news
+from discord_bot.night_notify import notify_youtube_uploaded
 from downloader.asset_downloader import AssetDownloader
 from logger import get_logger
 from meta.meta_generator import VideoMetadata, generate_metadata

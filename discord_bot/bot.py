@@ -6,7 +6,7 @@ Commands:
   /news summary – Show bullet-point summary
   /news youtube – Show today's YouTube link
 
-Run: python -m discord.bot
+Run: python -m discord_bot.bot
 """
 
 from __future__ import annotations
