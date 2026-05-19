@@ -165,6 +165,38 @@ python -m scheduler.runner
 
 ---
 
+## Discord Bot セットアップ
+
+### OAuth2 招待リンクの発行
+
+[Discord Developer Portal](https://discord.com/developers/applications) でアプリを選択し、
+**OAuth2 → URL Generator** を開く。
+
+**Scopes（必須）**
+
+| スコープ | 用途 |
+|---|---|
+| `bot` | Bot としてサーバーに参加 |
+| `applications.commands` | スラッシュコマンド（`/news *`）を登録 |
+
+**Bot Permissions（必須）**
+
+| 権限 | 用途 |
+|---|---|
+| Send Messages | テキストチャンネルへの返信 |
+| Embed Links | Embed カード形式の投稿 |
+| Connect | VC への参加（`/news play`） |
+| Speak | VC での音声再生（`/news play`） |
+| Use Voice Activity | VAD 許可（VC 接続安定化） |
+
+生成された URL でサーバーに招待すれば完了。  
+招待は **1 回きり** なので URL を保存しておく必要はない。
+再招待が必要になった場合は同じ手順で再発行できる。
+
+> Bot Token（`DISCORD_BOT_TOKEN`）は URL とは別物で、`.env` で管理する秘密情報。
+
+---
+
 ## Discord Bot コマンド
 
 Bot を手動起動する場合:
