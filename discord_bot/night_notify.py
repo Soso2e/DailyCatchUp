@@ -29,19 +29,22 @@ def notify_youtube_uploaded(
     Returns True if at least one channel succeeded.
     """
     channel_ids = get_all_channel_ids()
+    results: list[bool] = []
 
-    # Fallback: legacy single webhook URL
-    if not channel_ids and config.DISCORD_WEBHOOK_URL:
-        return _post_to_webhook(config.DISCORD_WEBHOOK_URL, youtube_url, metadata, articles, date_str)
+    if config.DISCORD_WEBHOOK_URL:
+        results.append(
+            _post_to_webhook(config.DISCORD_WEBHOOK_URL, youtube_url, metadata, articles, date_str)
+        )
 
-    if not channel_ids:
-        log.warning("No Discord channels registered – skipping night notification")
-        return False
-
-    results = [
+    results += [
         _post_to_channel(cid, youtube_url, metadata, articles, date_str)
         for cid in channel_ids
     ]
+
+    if not results:
+        log.warning("No Discord destinations configured – skipping night notification")
+        return False
+
     return any(results)
 
 

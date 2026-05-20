@@ -31,21 +31,22 @@ def post_morning_news(
     Returns True if at least one channel succeeded.
     """
     channel_ids = get_all_channel_ids()
+    results: list[bool] = []
 
-    # Fallback: legacy single webhook URL
-    if not channel_ids and config.DISCORD_WEBHOOK_URL:
-        return _post_to_webhook(
-            config.DISCORD_WEBHOOK_URL, audio_path, summary_path, articles, date_str
+    if config.DISCORD_WEBHOOK_URL:
+        results.append(
+            _post_to_webhook(config.DISCORD_WEBHOOK_URL, audio_path, summary_path, articles, date_str)
         )
 
-    if not channel_ids:
-        log.warning("No Discord channels registered – skipping morning post")
-        return False
-
-    results = [
+    results += [
         _post_to_channel(cid, audio_path, summary_path, articles, date_str)
         for cid in channel_ids
     ]
+
+    if not results:
+        log.warning("No Discord destinations configured – skipping morning post")
+        return False
+
     return any(results)
 
 
