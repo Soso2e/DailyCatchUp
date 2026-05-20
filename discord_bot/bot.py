@@ -1,14 +1,14 @@
 """Discord Bot with slash commands for on-demand news access.
 
 Commands:
-  /news today              – Show today's news summary
-  /news play [date]        – Play audio in VC (today or a past date)
-  /news summary            – Show bullet-point summary
-  /news youtube            – Show today's YouTube link
-  /news collect [date]     – Trigger morning data collection pipeline
-  /news webhook add        – Add a webhook channel for daily notifications
-  /news webhook remove     – Remove a registered webhook channel
-  /news webhook list       – List all registered webhook channels
+  /news today          – Show today's news summary
+  /news play [date]    – Play audio in VC (today or a past date)
+  /news summary        – Show bullet-point summary
+  /news youtube        – Show today's YouTube link
+  /news collect [date] – Trigger morning data collection pipeline
+  /news channel add    – Register the current channel for daily notifications
+  /news channel remove – Unregister the current channel
+  /news channel list   – List all registered notification channels
 
 Run: python -m discord_bot.bot
 """
@@ -385,127 +385,99 @@ async def news_collect(
         await interaction.followup.send(f"❌ パイプライン実行中にエラーが発生しました:\n```\n{exc}\n```")
 
 
-webhook_group = app_commands.Group(name="webhook", description="Webhookチャンネル管理（複数サーバー・チャンネルへの配信設定）")
-news_group.add_command(webhook_group)
+channel_group = app_commands.Group(name="channel", description="通知チャンネル管理（複数サーバー・チャンネルへの配信設定）")
+news_group.add_command(channel_group)
 
 
-def _has_webhook_permission(interaction: discord.Interaction) -> bool:
+def _has_manage_permission(interaction: discord.Interaction) -> bool:
     if interaction.guild is None:
         return True  # DMs: allow
     member = interaction.guild.get_member(interaction.user.id)
     if member is None:
         return False
     perms = member.guild_permissions
-    return perms.manage_webhooks or perms.administrator
+    return perms.manage_channels or perms.administrator
 
 
-@webhook_group.command(name="add", description="通知先WebhookURLを追加（Webhook管理権限が必要）")
-@app_commands.describe(
-    url="Discord Webhook URL（チャンネル設定 → 連携サービス → ウェブフックから作成）",
-    label="チャンネルのわかりやすい名前（省略時は自動設定）",
-)
-async def webhook_add(
-    interaction: discord.Interaction,
-    url: str,
-    label: str = "",
-) -> None:
-    if not _has_webhook_permission(interaction):
+@channel_group.command(name="add", description="このチャンネルを毎日の通知先に登録")
+async def channel_add(interaction: discord.Interaction) -> None:
+    if not _has_manage_permission(interaction):
         await interaction.response.send_message(
-            "⚠️ このコマンドは **Webhookの管理** または **管理者** 権限が必要です。",
+            "⚠️ このコマンドは **チャンネルの管理** または **管理者** 権限が必要です。",
             ephemeral=True,
         )
         return
 
-    from discord_bot.webhook_store import add_webhook, is_valid_discord_webhook_url
+    from discord_bot.channel_store import add_channel
 
-    if not is_valid_discord_webhook_url(url):
-        await interaction.response.send_message(
-            "⚠️ 有効なDiscord Webhook URLを入力してください。\n"
-            "`https://discord.com/api/webhooks/...` の形式である必要があります。",
-            ephemeral=True,
-        )
-        return
-
-    auto_label = label or (
-        f"{interaction.guild.name} #{interaction.channel.name}"
-        if interaction.guild and hasattr(interaction.channel, "name")
-        else "Unknown Channel"
+    channel_id = str(interaction.channel_id)
+    guild_name = interaction.guild.name if interaction.guild else "DM"
+    channel_name = (
+        interaction.channel.name
+        if hasattr(interaction.channel, "name")
+        else str(interaction.channel_id)
     )
     added_by = str(interaction.user)
 
-    if add_webhook(url, auto_label, added_by):
+    if add_channel(channel_id, guild_name, channel_name, added_by):
         await interaction.response.send_message(
-            f"✅ Webhookを追加しました！\n"
-            f"**ラベル:** `{auto_label}`\n"
-            "次回の朝刊・夜間通知からこのチャンネルにも配信されます。",
-            ephemeral=True,
+            f"✅ **#{channel_name}** を通知チャンネルに登録しました！\n"
+            "次回の朝刊・夜間通知からこのチャンネルに配信されます。",
         )
     else:
         await interaction.response.send_message(
-            "⚠️ このWebhook URLはすでに登録済みです。\n"
-            "`/news webhook list` で確認できます。",
+            "⚠️ このチャンネルはすでに登録済みです。\n"
+            "`/news channel list` で確認できます。",
             ephemeral=True,
         )
 
 
-@webhook_group.command(name="remove", description="通知先WebhookURLを削除（Webhook管理権限が必要）")
-@app_commands.describe(label_or_url="削除するWebhookのラベルまたはURL")
-async def webhook_remove(
-    interaction: discord.Interaction,
-    label_or_url: str,
-) -> None:
-    if not _has_webhook_permission(interaction):
+@channel_group.command(name="remove", description="このチャンネルを通知先から解除")
+async def channel_remove(interaction: discord.Interaction) -> None:
+    if not _has_manage_permission(interaction):
         await interaction.response.send_message(
-            "⚠️ このコマンドは **Webhookの管理** または **管理者** 権限が必要です。",
+            "⚠️ このコマンドは **チャンネルの管理** または **管理者** 権限が必要です。",
             ephemeral=True,
         )
         return
 
-    from discord_bot.webhook_store import remove_webhook
+    from discord_bot.channel_store import remove_channel
 
-    removed_label = remove_webhook(label_or_url)
-    if removed_label:
+    removed_name = remove_channel(str(interaction.channel_id))
+    if removed_name:
         await interaction.response.send_message(
-            f"✅ Webhook `{removed_label}` を削除しました。",
-            ephemeral=True,
+            f"✅ **#{removed_name}** を通知チャンネルから解除しました。",
         )
     else:
         await interaction.response.send_message(
-            "⚠️ 指定したラベルまたはURLのWebhookが見つかりませんでした。\n"
-            "`/news webhook list` で登録済みWebhookを確認してください。",
+            "⚠️ このチャンネルは通知先に登録されていません。\n"
+            "`/news channel list` で登録済みチャンネルを確認してください。",
             ephemeral=True,
         )
 
 
-@webhook_group.command(name="list", description="登録済みWebhookチャンネル一覧を表示")
-async def webhook_list(
-    interaction: discord.Interaction,
-) -> None:
-    from discord_bot.webhook_store import load_webhooks, mask_url
-    import config as _config
+@channel_group.command(name="list", description="登録済み通知チャンネルの一覧を表示")
+async def channel_list(interaction: discord.Interaction) -> None:
+    from discord_bot.channel_store import load_channels
 
-    entries = load_webhooks()
+    entries = load_channels()
     lines: list[str] = []
-
-    if _config.DISCORD_WEBHOOK_URL:
-        lines.append(f"🔧 **[.envデフォルト]** `{mask_url(_config.DISCORD_WEBHOOK_URL)}`")
 
     for i, e in enumerate(entries, 1):
         lines.append(
-            f"{i}. **{e['label']}**\n"
-            f"   URL: `{mask_url(e['url'])}`\n"
+            f"{i}. **{e['guild_name']} / #{e['channel_name']}**\n"
             f"   追加者: {e['added_by']} / {e['added_at'][:10]}"
         )
 
     if not lines:
         await interaction.response.send_message(
-            "ℹ️ Webhookが登録されていません。\n"
-            "`.env` の `DISCORD_WEBHOOK_URL` か `/news webhook add <URL>` で追加できます。",
+            "ℹ️ 通知チャンネルが登録されていません。\n"
+            "通知を受け取りたいチャンネルで `/news channel add` を実行してください。",
             ephemeral=True,
         )
         return
 
-    content = "📡 **登録済みWebhookチャンネル**\n\n" + "\n\n".join(lines)
+    content = "📡 **登録済み通知チャンネル**\n\n" + "\n\n".join(lines)
     await interaction.response.send_message(content[:1900], ephemeral=True)
 
 
