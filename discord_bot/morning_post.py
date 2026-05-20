@@ -10,6 +10,7 @@ import httpx
 
 import config
 from collector.rss_collector import Article
+from discord_bot.webhook_store import get_all_webhook_urls
 from logger import get_logger
 
 log = get_logger(__name__)
@@ -23,33 +24,41 @@ def post_morning_news(
     articles: List[Article],
     date_str: str,
 ) -> bool:
-    """Send audio file + summary text to the Discord channel.
+    """Send audio file + summary text to all registered Discord channels.
 
-    Returns True on success.
+    Returns True if at least one webhook succeeded.
     """
-    if not config.DISCORD_WEBHOOK_URL:
-        log.warning("DISCORD_WEBHOOK_URL not set – skipping morning post")
+    urls = get_all_webhook_urls()
+    if not urls:
+        log.warning("No Discord webhook URLs configured – skipping morning post")
         return False
 
+    results = [
+        _post_to_webhook(url, audio_path, summary_path, articles, date_str)
+        for url in urls
+    ]
+    return any(results)
+
+
+def _post_to_webhook(
+    webhook_url: str,
+    audio_path: Path | None,
+    summary_path: Path | None,
+    articles: List[Article],
+    date_str: str,
+) -> bool:
+    short_url = webhook_url[:60]
     success = True
 
-    # Build embed with article list
     embed = _build_embed(articles, date_str)
-
-    # Send embed message first
     try:
-        resp = httpx.post(
-            config.DISCORD_WEBHOOK_URL,
-            json={"embeds": [embed]},
-            timeout=30,
-        )
+        resp = httpx.post(webhook_url, json={"embeds": [embed]}, timeout=30)
         resp.raise_for_status()
-        log.info("Discord morning embed posted")
+        log.info("Discord morning embed posted: %s", short_url)
     except Exception as exc:
-        log.error("Discord embed post failed: %s", exc)
+        log.error("Discord embed post failed (%s): %s", short_url, exc)
         success = False
 
-    # Attach audio file (skip or guide if too large)
     if audio_path and audio_path.exists():
         size_bytes = audio_path.stat().st_size
         size_mb = size_bytes / 1_048_576
@@ -58,20 +67,17 @@ def post_morning_news(
                 "Audio file %.1f MB exceeds Discord 25 MB limit – skipping file upload", size_mb
             )
             _post_text(
+                webhook_url,
                 f"🎙️ **本日の音声ニュース** (ファイルサイズ {size_mb:.1f} MB が Discord の 25 MB 制限を超えています)\n"
                 "ボイスチャンネルで聞くには Bot コマンドをお使いください:\n"
                 "```\n/news play\n```\n"
-                "※ DailyCatchUp Bot が起動中で、あなたがボイスチャンネルに参加している場合のみ利用可能です。"
+                "※ DailyCatchUp Bot が起動中で、あなたがボイスチャンネルに参加している場合のみ利用可能です。",
             )
         else:
-            success &= _upload_file(audio_path, content="🎙️ **本日の音声ニュース**")
+            success &= _upload_file(webhook_url, audio_path, content="🎙️ **本日の音声ニュース**")
 
-    # Attach summary markdown file
     if summary_path and summary_path.exists():
-        success &= _upload_file(
-            summary_path,
-            content="📄 **本日の要約テキスト**",
-        )
+        success &= _upload_file(webhook_url, summary_path, content="📄 **本日の要約テキスト**")
 
     return success
 
@@ -97,12 +103,12 @@ def _build_embed(articles: List[Article], date_str: str) -> dict:
     }
 
 
-def _upload_file(path: Path, content: str = "") -> bool:
+def _upload_file(webhook_url: str, path: Path, content: str = "") -> bool:
     for attempt in range(1, config.RETRY_COUNT + 1):
         try:
             with open(path, "rb") as f:
                 resp = httpx.post(
-                    config.DISCORD_WEBHOOK_URL,
+                    webhook_url,
                     data={"content": content},
                     files={"file": (path.name, f, _mime_type(path))},
                     timeout=60,
@@ -118,13 +124,9 @@ def _upload_file(path: Path, content: str = "") -> bool:
     return False
 
 
-def _post_text(text: str) -> None:
+def _post_text(webhook_url: str, text: str) -> None:
     try:
-        httpx.post(
-            config.DISCORD_WEBHOOK_URL,
-            json={"content": text},
-            timeout=15,
-        )
+        httpx.post(webhook_url, json={"content": text}, timeout=15)
     except Exception:
         pass
 
