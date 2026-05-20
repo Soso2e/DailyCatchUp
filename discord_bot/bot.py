@@ -6,6 +6,9 @@ Commands:
   /news summary        – Show bullet-point summary
   /news youtube        – Show today's YouTube link
   /news collect [date] – Trigger morning data collection pipeline
+  /news channel add    – Register the current channel for daily notifications
+  /news channel remove – Unregister the current channel
+  /news channel list   – List all registered notification channels
 
 Run: python -m discord_bot.bot
 """
@@ -380,6 +383,102 @@ async def news_collect(
     except Exception as exc:
         log.error("Pipeline error from Discord command: %s", exc)
         await interaction.followup.send(f"❌ パイプライン実行中にエラーが発生しました:\n```\n{exc}\n```")
+
+
+channel_group = app_commands.Group(name="channel", description="通知チャンネル管理（複数サーバー・チャンネルへの配信設定）")
+news_group.add_command(channel_group)
+
+
+def _has_manage_permission(interaction: discord.Interaction) -> bool:
+    if interaction.guild is None:
+        return True  # DMs: allow
+    member = interaction.guild.get_member(interaction.user.id)
+    if member is None:
+        return False
+    perms = member.guild_permissions
+    return perms.manage_channels or perms.administrator
+
+
+@channel_group.command(name="add", description="このチャンネルを毎日の通知先に登録")
+async def channel_add(interaction: discord.Interaction) -> None:
+    if not _has_manage_permission(interaction):
+        await interaction.response.send_message(
+            "⚠️ このコマンドは **チャンネルの管理** または **管理者** 権限が必要です。",
+            ephemeral=True,
+        )
+        return
+
+    from discord_bot.channel_store import add_channel
+
+    channel_id = str(interaction.channel_id)
+    guild_name = interaction.guild.name if interaction.guild else "DM"
+    channel_name = (
+        interaction.channel.name
+        if hasattr(interaction.channel, "name")
+        else str(interaction.channel_id)
+    )
+    added_by = str(interaction.user)
+
+    if add_channel(channel_id, guild_name, channel_name, added_by):
+        await interaction.response.send_message(
+            f"✅ **#{channel_name}** を通知チャンネルに登録しました！\n"
+            "次回の朝刊・夜間通知からこのチャンネルに配信されます。",
+        )
+    else:
+        await interaction.response.send_message(
+            "⚠️ このチャンネルはすでに登録済みです。\n"
+            "`/news channel list` で確認できます。",
+            ephemeral=True,
+        )
+
+
+@channel_group.command(name="remove", description="このチャンネルを通知先から解除")
+async def channel_remove(interaction: discord.Interaction) -> None:
+    if not _has_manage_permission(interaction):
+        await interaction.response.send_message(
+            "⚠️ このコマンドは **チャンネルの管理** または **管理者** 権限が必要です。",
+            ephemeral=True,
+        )
+        return
+
+    from discord_bot.channel_store import remove_channel
+
+    removed_name = remove_channel(str(interaction.channel_id))
+    if removed_name:
+        await interaction.response.send_message(
+            f"✅ **#{removed_name}** を通知チャンネルから解除しました。",
+        )
+    else:
+        await interaction.response.send_message(
+            "⚠️ このチャンネルは通知先に登録されていません。\n"
+            "`/news channel list` で登録済みチャンネルを確認してください。",
+            ephemeral=True,
+        )
+
+
+@channel_group.command(name="list", description="登録済み通知チャンネルの一覧を表示")
+async def channel_list(interaction: discord.Interaction) -> None:
+    from discord_bot.channel_store import load_channels
+
+    entries = load_channels()
+    lines: list[str] = []
+
+    for i, e in enumerate(entries, 1):
+        lines.append(
+            f"{i}. **{e['guild_name']} / #{e['channel_name']}**\n"
+            f"   追加者: {e['added_by']} / {e['added_at'][:10]}"
+        )
+
+    if not lines:
+        await interaction.response.send_message(
+            "ℹ️ 通知チャンネルが登録されていません。\n"
+            "通知を受け取りたいチャンネルで `/news channel add` を実行してください。",
+            ephemeral=True,
+        )
+        return
+
+    content = "📡 **登録済み通知チャンネル**\n\n" + "\n\n".join(lines)
+    await interaction.response.send_message(content[:1900], ephemeral=True)
 
 
 client.tree.add_command(news_group)
