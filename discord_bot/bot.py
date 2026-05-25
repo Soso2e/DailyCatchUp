@@ -392,10 +392,10 @@ news_group.add_command(channel_group)
 def _has_manage_permission(interaction: discord.Interaction) -> bool:
     if interaction.guild is None:
         return True  # DMs: allow
-    member = interaction.guild.get_member(interaction.user.id)
-    if member is None:
+    # interaction.user is already a Member in guild context
+    if not isinstance(interaction.user, discord.Member):
         return False
-    perms = member.guild_permissions
+    perms = interaction.user.guild_permissions
     return perms.manage_channels or perms.administrator
 
 
