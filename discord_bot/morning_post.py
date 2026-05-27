@@ -25,6 +25,8 @@ def post_morning_news(
     summary_path: Path | None,
     articles: List[Article],
     date_str: str,
+    *,
+    agenda_text: str | None = None,
 ) -> bool:
     """Send morning news to all registered Discord channels.
 
@@ -35,11 +37,11 @@ def post_morning_news(
 
     if config.DISCORD_WEBHOOK_URL:
         results.append(
-            _post_to_webhook(config.DISCORD_WEBHOOK_URL, audio_path, summary_path, articles, date_str)
+            _post_to_webhook(config.DISCORD_WEBHOOK_URL, audio_path, summary_path, articles, date_str, agenda_text=agenda_text)
         )
 
     results += [
-        _post_to_channel(cid, audio_path, summary_path, articles, date_str)
+        _post_to_channel(cid, audio_path, summary_path, articles, date_str, agenda_text=agenda_text)
         for cid in channel_ids
     ]
 
@@ -56,6 +58,8 @@ def _post_to_channel(
     summary_path: Path | None,
     articles: List[Article],
     date_str: str,
+    *,
+    agenda_text: str | None = None,
 ) -> bool:
     if not config.DISCORD_BOT_TOKEN:
         log.error("DISCORD_BOT_TOKEN not set – cannot post to channel %s", channel_id)
@@ -73,6 +77,13 @@ def _post_to_channel(
     except Exception as exc:
         log.error("Discord embed post failed (channel %s): %s", channel_id, exc)
         success = False
+
+    if agenda_text:
+        _post_text_to_channel(
+            channel_id,
+            headers,
+            f"📋 **本日のアジェンダ（NotebookLM）**\n\n{agenda_text}"[:2000],
+        )
 
     if audio_path and audio_path.exists():
         size_bytes = audio_path.stat().st_size
@@ -141,6 +152,8 @@ def _post_to_webhook(
     summary_path: Path | None,
     articles: List[Article],
     date_str: str,
+    *,
+    agenda_text: str | None = None,
 ) -> bool:
     """Legacy single-webhook fallback."""
     embed = _build_embed(articles, date_str)
@@ -152,6 +165,16 @@ def _post_to_webhook(
     except Exception as exc:
         log.error("Discord webhook embed post failed: %s", exc)
         success = False
+
+    if agenda_text:
+        try:
+            httpx.post(
+                webhook_url,
+                json={"content": f"📋 **本日のアジェンダ（NotebookLM）**\n\n{agenda_text}"[:2000]},
+                timeout=15,
+            )
+        except Exception:
+            pass
 
     if audio_path and audio_path.exists():
         size_bytes = audio_path.stat().st_size
