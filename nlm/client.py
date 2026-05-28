@@ -397,6 +397,30 @@ class NotebookLMClient:
 
         return self._run(_inner())
 
+    def query_agenda(self, notebook_id: str) -> str | None:
+        """Send the agenda prompt to NotebookLM chat and return the response text."""
+        prompt = (
+            "ソースを全て踏まえた、アジェンダを教えてください。\n"
+            "本日のニュースのトピックをまとめるとこんな感じです。\n"
+            "- (箇条書き)\n\n"
+            "(箇条書きの後に端的なまとめ。400字以内で本日のおもしろい発見を教えて。)"
+        )
+
+        async def _inner():
+            async with _open_client() as c:
+                response = await c.chat.ask(notebook_id, prompt)
+                if hasattr(response, "text"):
+                    return response.text
+                if hasattr(response, "content"):
+                    return response.content
+                return str(response) if response else None
+
+        try:
+            return self._run(_inner())
+        except Exception as exc:
+            log.warning("Agenda query failed: %s", exc)
+            return None
+
     def create_notebook_with_articles(
         self, title: str, articles: List[Article]
     ) -> GenerationResult:

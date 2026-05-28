@@ -144,13 +144,36 @@ def step_meta(articles: list[Article], date_str: str, paths: dict) -> VideoMetad
     return metadata
 
 
-def step_discord_morning(articles: list[Article], paths: dict, date_str: str) -> bool:
+def step_agenda(notebook_id: str, client: "NotebookLMClient", date_str: str) -> str | None:
+    log.info("=== Step: query NotebookLM agenda ===")
+    try:
+        text = client.query_agenda(notebook_id)
+    except Exception as exc:
+        log.warning("Agenda step failed: %s", exc)
+        return None
+    if text:
+        agenda_file = output_dir(date_str) / "agenda.txt"
+        agenda_file.write_text(text, encoding="utf-8")
+        log.info("Agenda saved: %d chars", len(text))
+    else:
+        log.warning("Agenda query returned empty response")
+    return text
+
+
+def step_discord_morning(
+    articles: list[Article],
+    paths: dict,
+    date_str: str,
+    *,
+    agenda_text: str | None = None,
+) -> bool:
     log.info("=== Step: Discord morning post ===")
     return post_morning_news(
         audio_path=paths.get("audio"),
         summary_path=paths.get("summary"),
         articles=articles,
         date_str=date_str,
+        agenda_text=agenda_text,
     )
 
 
@@ -303,6 +326,14 @@ def run_morning_pipeline(date_str: str | None = None, skip_nlm: bool = False) ->
                 _update_status(status_mgr, status, last_step="source_add_failed")
                 raise RuntimeError("No sources were added to NotebookLM (all URLs failed to resolve or were rejected)")
 
+        agenda_file = output_dir(date_str) / "agenda.txt"
+        if agenda_file.exists() and agenda_file.stat().st_size > 0:
+            agenda_text = agenda_file.read_text(encoding="utf-8")
+            log.info("Loaded cached agenda (%d chars)", len(agenda_text))
+        else:
+            agenda_text = step_agenda(notebook_id, client, date_str)
+        _pipeline_state["agenda_text"] = agenda_text
+
         should_generate = added_count >= config.MIN_SOURCES_TO_GENERATE
         if not should_generate:
             log.warning(
@@ -420,8 +451,9 @@ def _run_morning_discord_only(date_str: str, status: DailyStatus, status_mgr) ->
 def _run_discord_morning(date_str: str, status: DailyStatus, status_mgr) -> None:
     articles = _pipeline_state.get("articles", [])
     paths = _pipeline_state.get("paths", {})
+    agenda_text = _pipeline_state.get("agenda_text")
     try:
-        ok = step_discord_morning(articles, paths, date_str)
+        ok = step_discord_morning(articles, paths, date_str, agenda_text=agenda_text)
         _update_status(status_mgr, status, discord_morning=ok, last_step="discord_morning")
     except Exception as exc:
         log.error("Discord morning post error: %s", exc)
@@ -531,6 +563,10 @@ def _restore_state(date_str: str) -> None:
             "summary": out_dir / "summary.md",
         }
         log.info("Restored state from %s", meta_file)
+
+    agenda_file = out_dir / "agenda.txt"
+    if agenda_file.exists() and agenda_file.stat().st_size > 0:
+        _pipeline_state["agenda_text"] = agenda_file.read_text(encoding="utf-8")
 
     status_mgr = get_status_manager()
     _pipeline_state["articles"] = status_mgr.load_articles(date_str)
