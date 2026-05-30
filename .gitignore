@@ -22,3 +22,4 @@ outputs/
 
 # Scripts cache
 scripts/__pycache__/
+notification_channels.json
