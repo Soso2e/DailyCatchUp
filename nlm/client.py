@@ -409,6 +409,8 @@ class NotebookLMClient:
         async def _inner():
             async with _open_client() as c:
                 response = await c.chat.ask(notebook_id, prompt)
+                if hasattr(response, "answer"):
+                    return response.answer
                 if hasattr(response, "text"):
                     return response.text
                 if hasattr(response, "content"):
