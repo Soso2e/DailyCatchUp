@@ -461,8 +461,13 @@ def _run_discord_morning(date_str: str, status: DailyStatus, status_mgr) -> None
         _update_status(status_mgr, status, last_step="discord_morning_failed")
 
 
-def run_evening_pipeline() -> None:
-    """Run the evening pipeline."""
+def run_evening_pipeline(notebook_id_override: str | None = None) -> None:
+    """Run the evening pipeline.
+
+    Args:
+        notebook_id_override: If provided, use this notebook_id for video download
+            instead of the one stored in the status (useful when morning pipeline failed).
+    """
     date_str = today_str()
     log.info("====== Evening pipeline start (%s) ======", date_str)
 
@@ -476,23 +481,42 @@ def run_evening_pipeline() -> None:
     paths = _pipeline_state.get("paths", {})
     metadata = _pipeline_state.get("metadata")
 
+    # If metadata is still missing, try generating it from cached articles
+    if metadata is None and articles:
+        log.info("metadata.json missing – attempting to generate from cached articles")
+        try:
+            metadata = step_meta(articles, date_str, paths)
+            if metadata:
+                _pipeline_state["metadata"] = metadata
+                _update_status(status_mgr, status, meta_generated=True, last_step="meta_generated_evening")
+        except Exception as exc:
+            log.warning("Evening metadata generation failed: %s", exc)
+
     if metadata is None:
         log.error("No metadata available - cannot proceed with evening pipeline")
         _append_error(status, "evening: metadata_missing")
         _update_status(status_mgr, status, last_step="evening_skipped_no_metadata")
         return
 
+    # Resolve which notebook_id to use for video download
+    effective_notebook_id = notebook_id_override or status.notebook_id
+    if notebook_id_override:
+        log.info("Using notebook_id override: %s", notebook_id_override)
+        _update_status(status_mgr, status, notebook_id=notebook_id_override,
+                       notebook_url=f"https://notebooklm.google.com/notebook/{notebook_id_override}")
+        status.notebook_id = notebook_id_override
+
     # If video was not downloaded in the morning, attempt re-download from existing notebook
     video_path = paths.get("video")
-    if (not video_path or not Path(video_path).exists()) and status.notebook_id:
+    if (not video_path or not Path(video_path).exists()) and effective_notebook_id:
         log.info(
             "Video not yet downloaded – attempting re-download from notebook %s",
-            status.notebook_id,
+            effective_notebook_id,
         )
         try:
             client = NotebookLMClient()
             new_paths = client.download_assets(
-                status.notebook_id,
+                effective_notebook_id,
                 output_dir(date_str),
                 audio=False,
                 video=True,
@@ -653,6 +677,12 @@ if __name__ == "__main__":
         action="store_true",
         help="Skip NotebookLM steps; post to Discord using already-downloaded assets",
     )
+    parser.add_argument(
+        "--notebook-id",
+        default=None,
+        metavar="NOTEBOOK_ID",
+        help="NotebookLM notebook ID to use for video download in evening pipeline",
+    )
     args = parser.parse_args()
 
     date_str = args.date or today_str()
@@ -662,7 +692,7 @@ if __name__ == "__main__":
     elif args.morning:
         run_morning_pipeline(date_str=date_str, skip_nlm=args.skip_nlm)
     elif args.evening:
-        run_evening_pipeline()
+        run_evening_pipeline(notebook_id_override=args.notebook_id)
     elif args.step:
         if args.step == "collect":
             articles = step_collect(date_str)
