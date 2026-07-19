@@ -10,6 +10,8 @@ Commands:
   /news channel remove – Unregister the current channel
   /news channel list   – List all registered notification channels
 
+DailyCatchUp posts also support NotebookLM Q&A inside Discord threads.
+
 Run: python -m discord_bot.bot
 """
 
@@ -27,12 +29,20 @@ import discord
 from discord import app_commands
 
 import config
+from discord_bot.thread_qa import (
+    ask_notebook,
+    infer_daily_date,
+    is_dailycatchup_starter,
+    load_notebook_id,
+    split_discord_message,
+)
 from logger import get_logger
 
 log = get_logger(__name__)
 
 
 _pipeline_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="pipeline")
+_notebooklm_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="notebooklm-chat")
 
 VOICE_CONNECT_RETRIES = 3
 VOICE_CONNECT_TIMEOUT = 25.0
@@ -76,6 +86,22 @@ def _package_version(package_name: str) -> str:
         return metadata.version(package_name)
     except metadata.PackageNotFoundError:
         return "not installed"
+
+
+async def _fetch_thread_starter(thread: discord.Thread) -> discord.Message | None:
+    """Fetch the message a text-channel thread was created from."""
+    parent = thread.parent
+    if parent is not None and hasattr(parent, "fetch_message"):
+        try:
+            return await parent.fetch_message(thread.id)
+        except (discord.NotFound, discord.Forbidden, discord.HTTPException) as exc:
+            log.debug("Could not fetch thread starter from parent channel: %s", exc)
+
+    try:
+        return await thread.fetch_message(thread.id)
+    except (discord.NotFound, discord.Forbidden, discord.HTTPException) as exc:
+        log.debug("Could not fetch thread starter from thread: %s", exc)
+        return None
 
 
 async def _disconnect_existing_voice_client(guild: discord.Guild | None) -> None:
@@ -193,6 +219,7 @@ class NewsBot(discord.Client):
     def __init__(self) -> None:
         intents = discord.Intents.default()
         intents.voice_states = True
+        intents.message_content = True
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
 
@@ -214,6 +241,68 @@ class NewsBot(discord.Client):
             _package_version("PyNaCl"),
             _package_version("davey"),
         )
+
+    async def on_message(self, message: discord.Message) -> None:
+        """Answer user questions posted in threads created from daily posts."""
+        if message.author.bot or not message.content.strip():
+            return
+        if not isinstance(message.channel, discord.Thread):
+            return
+
+        starter = await _fetch_thread_starter(message.channel)
+        if starter is None or not is_dailycatchup_starter(starter):
+            return
+
+        date_str = infer_daily_date(starter)
+        question = message.clean_content.strip()
+        loop = asyncio.get_running_loop()
+
+        try:
+            async with message.channel.typing():
+                notebook_id = await loop.run_in_executor(
+                    _notebooklm_executor, load_notebook_id, date_str
+                )
+                if not notebook_id:
+                    await message.reply(
+                        f"⚠️ `{date_str}` のNotebookLMが見つかりません。朝のパイプライン完了後にもう一度質問してください。",
+                        mention_author=False,
+                    )
+                    return
+
+                answer = await loop.run_in_executor(
+                    _notebooklm_executor,
+                    ask_notebook,
+                    notebook_id,
+                    question,
+                    date_str,
+                )
+        except Exception as exc:
+            log.error(
+                "NotebookLM thread question failed: date=%s thread=%s error=%s",
+                date_str,
+                message.channel.id,
+                exc,
+                exc_info=True,
+            )
+            await message.reply(
+                "❌ NotebookLMへの質問に失敗しました。認証セッションとBotログを確認してください。",
+                mention_author=False,
+            )
+            return
+
+        chunks = split_discord_message(answer or "")
+        if not chunks:
+            await message.reply(
+                "⚠️ NotebookLMから回答を取得できませんでした。質問を少し具体的にして再度お試しください。",
+                mention_author=False,
+            )
+            return
+
+        for index, chunk in enumerate(chunks):
+            if index == 0:
+                await message.reply(chunk, mention_author=False)
+            else:
+                await message.channel.send(chunk)
 
 
 client = NewsBot()
