@@ -11,6 +11,7 @@ from typing import List
 import config
 from collector.rss_collector import Article
 from logger import get_logger
+from nlm.retention import prune_daily_notebooks
 from nlm.url_resolver import resolve_url
 
 log = get_logger(__name__)
@@ -122,7 +123,25 @@ class NotebookLMClient:
                 raise
         return self._run(_inner())
 
+    def prune_expired_notebooks(self) -> int:
+        """Delete DailyCatchUp NotebookLM notebooks that reached retention age."""
+        async def _inner():
+            async with _open_client() as c:
+                result = await prune_daily_notebooks(
+                    c,
+                    retention_days=config.NOTEBOOKLM_RETENTION_DAYS,
+                )
+                return result.deleted
+
+        return self._run(_inner())
+
     def create_notebook(self, title: str) -> GenerationResult:
+        # Run retention immediately before every managed notebook creation so a
+        # full NotebookLM account can free old DailyCatchUp slots first.
+        deleted = self.prune_expired_notebooks()
+        if deleted:
+            log.info("NotebookLM retention freed %d notebook slot(s) before creation", deleted)
+
         async def _inner():
             async with _open_client() as c:
                 nb = await c.notebooks.create(title)
